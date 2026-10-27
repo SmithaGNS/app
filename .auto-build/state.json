@@ -58,6 +58,14 @@
         "e2e": 49,
         "failed": 0
       }
+    },
+    "contact": {
+      "backend": "merged",
+      "backendTests": {
+        "unit": 8,
+        "e2e": 20,
+        "failed": 0
+      }
     }
   },
   "run": {

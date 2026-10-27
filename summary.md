@@ -10,6 +10,7 @@ Open questions: 0 (0 high impact) · Decisions: 0 → see `open-questions.csv`
 | Module | Side | Status | Current role | Round | Notes |
 | ------ | ---- | ------ | ------------ | ----- | ----- |
 | auth | backend | ✅ Merged | - | 1/3 | 92 tests green (43 unit, 49 e2e); security PASSED; 92 UI-only TCs deferred to frontend |
+| contact | backend | ✅ Merged | - | 1/3 | 120 tests green in repo (51 unit, 69 e2e; 28 contact); security PASSED; UI-only TCs deferred to frontend |
 
 <!-- Status values: ⏳ Not started · 📋 Planning · 🗄️ DB design · ✍️ Stories · 👩‍💻 Developing (round n/3) · ✅ Verified · 🧪 Testing (run n) · 🔗 Integration testing · 🛡️ Security audit · 🏛️ Architecture review · ✅ Merged · 🐞 Bug fixing · 🔒 Blocked (security) · ⚠️ Merged with open issues -->
 
@@ -18,6 +19,7 @@ Open questions: 0 (0 high impact) · Decisions: 0 → see `open-questions.csv`
 ## Latest test reports
 
 - auth backend: `testresults/auth/backend-test-report.md` (92/92 pass)
+- contact backend: `testresults/contact/backend-test-report.md` (all pass)
 
 ## Links
 
