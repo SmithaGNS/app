@@ -13,6 +13,9 @@ servers:
 tags:
   - name: auth
   - name: public
+  - name: catalogue
+  - name: users
+    description: Portal users (SCR-20), app users (SCR-21), profile and change password (SCR-22).
   - name: health
   - name: dev
     description: Development/test only, absent (404) unless DEV_MAILBOX_ENABLED=true; never in production.
@@ -36,7 +39,7 @@ components:
               properties:
                 code:
                   type: string
-                  enum: [invalid_credentials, login_locked, otp_incorrect, otp_expired, otp_attempts_exceeded, otp_resend_wait, rate_limited, session_expired, unauthenticated, forbidden, reset_token_invalid]
+                  enum: [invalid_credentials, login_locked, otp_incorrect, otp_expired, otp_attempts_exceeded, otp_resend_wait, rate_limited, session_expired, unauthenticated, forbidden, reset_token_invalid, category_name_taken, category_protected, category_in_use, owner_name_taken, owner_in_use]
             - type: object
               properties:
                 validation: { type: array, items: { type: string } }
@@ -82,7 +85,184 @@ components:
       properties:
         message: { type: string }
         errors: { type: "null" }
+    # ----- catalogue -----
+    Category:
+      type: object
+      required: [id, name, description, ownerId, owner, isProtected, createdAt, updatedAt]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string, maxLength: 60 }
+        description: { type: string, maxLength: 150 }
+        ownerId: { type: [string, "null"], format: uuid }
+        owner: { type: [object, "null"], properties: { id: { type: string, format: uuid }, name: { type: string } } }
+        isProtected: { type: boolean, description: "true for Other: cannot be deleted or renamed" }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    CategoryBody:
+      type: object
+      required: [name, description]
+      additionalProperties: false
+      properties:
+        name: { type: string, minLength: 1, maxLength: 60, description: "Trimmed, < > stripped, unique case-insensitively" }
+        description: { type: string, minLength: 1, maxLength: 150 }
+        ownerId: { type: [string, "null"], format: uuid, description: "Absent or null = no owner" }
+    Owner:
+      type: object
+      required: [id, name, description, categoryCount, createdAt, updatedAt]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string, maxLength: 60 }
+        description: { type: string, maxLength: 150 }
+        categoryCount: { type: integer }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    OwnerBody:
+      type: object
+      required: [name, description]
+      additionalProperties: false
+      properties:
+        name: { type: string, minLength: 1, maxLength: 60, description: "Trimmed, < > stripped, unique case-insensitively" }
+        description: { type: string, minLength: 1, maxLength: 150 }
+    Config:
+      type: object
+      required: [badgeName, updatedAt]
+      properties:
+        badgeName: { type: string, maxLength: 100 }
+        updatedAt: { type: [string, "null"], format: date-time }
+    CategoryPage:
+      type: object
+      required: [items, page, pageSize, total, totalPages]
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/Category" } }
+        page: { type: integer }
+        pageSize: { type: integer }
+        total: { type: integer }
+        totalPages: { type: integer }
+    OwnerPage:
+      type: object
+      required: [items, page, pageSize, total, totalPages]
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/Owner" } }
+        page: { type: integer }
+        pageSize: { type: integer }
+        total: { type: integer }
+        totalPages: { type: integer }
+  parameters:
+    CataloguePage: { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+    CataloguePageSize: { name: pageSize, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 10 } }
+    # ---- users module (SCR-20/21/22) -------------------------------------------------------------
+    PageMeta:
+      type: object
+      required: [total, perPage, currentPage, lastPage]
+      properties:
+        total: { type: integer, minimum: 0 }
+        perPage: { type: integer, enum: [10, 25, 50, 100] }
+        currentPage: { type: integer, minimum: 1 }
+        lastPage: { type: integer, minimum: 1 }
+    PortalUserAdmin:
+      type: object
+      required: [id, firstName, lastName, name, email, phoneCountryCode, phone, phoneDisplay, address, role, level, status, mustChangePassword, lastLoginAt, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        firstName: { type: string, maxLength: 60 }
+        lastName: { type: string, maxLength: 60 }
+        name: { type: string, description: First + last name }
+        email: { type: [string, "null"], description: "NULL for an invalid legacy e-mail; that user cannot sign in until an e-mail is set" }
+        phoneCountryCode: { type: [string, "null"], pattern: "^[0-9]{1,4}$", examples: ["1"] }
+        phone: { type: [string, "null"], pattern: "^[0-9]{7,15}$", description: National digits only }
+        phoneDisplay: { type: [string, "null"], examples: ["+1 876 3831676"] }
+        address: { type: [string, "null"], maxLength: 200 }
+        role: { $ref: "#/components/schemas/Role" }
+        level: { type: [integer, "null"], minimum: 1, maximum: 3 }
+        status: { type: string, enum: [Active, Inactive] }
+        mustChangePassword: { type: boolean }
+        lastLoginAt: { type: [string, "null"], format: date-time }
+        createdAt: { type: string, format: date-time }
+    PortalUserWrite:
+      type: object
+      required: [firstName, lastName, email, phone, role]
+      additionalProperties: false
+      properties:
+        firstName: { type: string, minLength: 1, maxLength: 60, description: "Letters, digits, space, apostrophe, hyphen, period; `<>` stripped" }
+        lastName: { type: string, minLength: 1, maxLength: 60 }
+        email: { type: string, maxLength: 254, pattern: "^\\S+@\\S+\\.\\S+$", description: Stored lower-cased; unique }
+        phoneCountryCode: { type: [string, "null"], pattern: "^\\+?[0-9]{1,4}$", description: Leading + accepted and dropped }
+        phone: { type: string, pattern: "^[0-9]{7,15}$", description: Unique together with the country code }
+        address: { type: [string, "null"], maxLength: 200 }
+        role: { $ref: "#/components/schemas/Role" }
+        level: { type: [integer, "null"], minimum: 1, maximum: 3 }
+    CreatePortalUser:
+      allOf:
+        - $ref: "#/components/schemas/PortalUserWrite"
+        - type: object
+          required: [password]
+          properties:
+            password: { type: string, minLength: 12, maxLength: 128, description: "Upper + lower + digit + symbol (shared policy). The user must change it at first sign-in." }
+    UpdatePortalUser:
+      allOf:
+        - $ref: "#/components/schemas/PortalUserWrite"
+        - type: object
+          properties:
+            password: { type: [string, "null"], minLength: 12, maxLength: 128, description: "Blank/omitted keeps the current password; a value revokes the user's sessions and forces a change" }
+            status: { type: string, enum: [Active, Inactive] }
+    AppUserView:
+      type: object
+      required: [id, firstName, lastName, email, phoneMasked, pointsEarned, pointsRedeemed, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        firstName: { type: [string, "null"] }
+        lastName: { type: [string, "null"] }
+        email: { type: [string, "null"] }
+        phoneMasked: { type: string, description: "Every digit but the last three is a bullet; country code readable", examples: ["+1 \u2022\u2022\u2022\u2022\u2022\u2022\u2022567"] }
+        pointsEarned: { type: integer, minimum: 0, maximum: 1000000 }
+        pointsRedeemed: { type: integer, minimum: 0, maximum: 1000000, description: Never greater than pointsEarned }
+        createdAt: { type: string, format: date-time }
+    AppUserWrite:
+      type: object
+      additionalProperties: false
+      properties:
+        firstName: { type: [string, "null"], maxLength: 60 }
+        lastName: { type: [string, "null"], maxLength: 60 }
+        email: { type: [string, "null"], maxLength: 254, description: Optional; unique among app users }
+        phoneCountryCode: { type: [string, "null"], pattern: "^\\+?[0-9]{1,4}$" }
+        phone: { type: string, pattern: "^[0-9]{7,15}$", description: Required on create; on update omitted = unchanged }
+        pointsEarned: { type: integer, minimum: 0, maximum: 1000000, default: 0 }
+        pointsRedeemed: { type: integer, minimum: 0, maximum: 1000000, default: 0 }
+    RevealedPhone:
+      type: object
+      required: [phoneCountryCode, phone, phoneDisplay]
+      properties:
+        phoneCountryCode: { type: [string, "null"] }
+        phone: { type: string }
+        phoneDisplay: { type: string, examples: ["+1 876 1234567"] }
+    UpdateProfile:
+      type: object
+      required: [firstName, lastName, phone]
+      additionalProperties: false
+      properties:
+        firstName: { type: string, minLength: 1, maxLength: 60 }
+        lastName: { type: string, minLength: 1, maxLength: 60 }
+        phoneCountryCode: { type: [string, "null"] }
+        phone: { type: string, pattern: "^[0-9]{7,15}$" }
+        address: { type: [string, "null"], maxLength: 200 }
+    ChangePassword:
+      type: object
+      required: [currentPassword, newPassword, confirmPassword]
+      additionalProperties: false
+      properties:
+        currentPassword: { type: string, minLength: 1, maxLength: 128 }
+        newPassword: { type: string, minLength: 12, maxLength: 128, description: Shared password policy; must differ from the current one }
+        confirmPassword: { type: string, description: Must equal newPassword }
   responses:
+    Conflict:
+      description: "Duplicate e-mail/phone (400-style `errors.fields.{field}[]`) or a business rule (`errors.code`: cannot_delete_self | last_administrator | email_missing)"
+      content: { application/json: { schema: { $ref: "#/components/schemas/ErrorEnvelope" } } }
+    NotFound:
+      description: Record not found or soft-deleted (errors.code not_found)
+      content: { application/json: { schema: { $ref: "#/components/schemas/ErrorEnvelope" } } }
+    PasswordChangeRequired:
+      description: Forbidden until the first-login password change is done (errors.code password_change_required) or role lacks the permission (forbidden)
+      content: { application/json: { schema: { $ref: "#/components/schemas/ErrorEnvelope" } } }
     ValidationError:
       description: Validation failed
       content: { application/json: { schema: { $ref: "#/components/schemas/ErrorEnvelope" } } }
@@ -94,6 +274,12 @@ components:
       content: { application/json: { schema: { $ref: "#/components/schemas/ErrorEnvelope" } } }
     TooManyRequests:
       description: Rate limited / throttled (errors.code rate_limited | login_locked | otp_attempts_exceeded | otp_resend_wait)
+      content: { application/json: { schema: { $ref: "#/components/schemas/ErrorEnvelope" } } }
+    CatalogueConflict:
+      description: "Conflict (errors.code: category_name_taken | category_protected | category_in_use | owner_name_taken | owner_in_use)"
+      content: { application/json: { schema: { $ref: "#/components/schemas/ErrorEnvelope" } } }
+    CatalogueNotFound:
+      description: Category or owner not found
       content: { application/json: { schema: { $ref: "#/components/schemas/ErrorEnvelope" } } }
 paths:
   /health:
@@ -556,4 +742,647 @@ paths:
       responses:
         "201": { description: "Stored (data = { id })" }
         "400": { $ref: "#/components/responses/ValidationError" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+
+  # ===== catalogue module (SCR-10 categories, SCR-11 owners, SCR-12 config) =====
+  /v1/categories:
+    get:
+      operationId: categoriesList
+      tags: [catalogue]
+      summary: List categories in insertion order (SCR-10). Permission categories:manage.
+      security: [{ bearerAuth: [] }]
+      x-roles: [Administrator]
+      parameters:
+        - { name: search, in: query, schema: { type: string, maxLength: 100 }, description: "Case-insensitive; matches name, description, owner name; % and _ literal" }
+        - { $ref: "#/components/parameters/CataloguePage" }
+        - { $ref: "#/components/parameters/CataloguePageSize" }
+      responses:
+        "200":
+          description: Page of categories
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - properties: { data: { $ref: "#/components/schemas/CategoryPage" } }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    post:
+      operationId: categoriesCreate
+      tags: [catalogue]
+      summary: Add a category. Permission categories:manage.
+      security: [{ bearerAuth: [] }]
+      x-roles: [Administrator]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/CategoryBody" } } }
+      responses:
+        "201":
+          description: Created; message `Category "{name}" added successfully.`
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - properties: { data: { $ref: "#/components/schemas/Category" } }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409": { $ref: "#/components/responses/CatalogueConflict" }
+  /v1/categories/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      operationId: categoriesGet
+      tags: [catalogue]
+      summary: One category. Permission categories:manage.
+      security: [{ bearerAuth: [] }]
+      x-roles: [Administrator]
+      responses:
+        "200":
+          description: Category
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - properties: { data: { $ref: "#/components/schemas/Category" } }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/CatalogueNotFound" }
+    put:
+      operationId: categoriesUpdate
+      tags: [catalogue]
+      summary: Replace a category (absent ownerId clears the owner); the protected Other category cannot be renamed. Permission categories:manage.
+      security: [{ bearerAuth: [] }]
+      x-roles: [Administrator]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/CategoryBody" } } }
+      responses:
+        "200":
+          description: Updated; message `Category "{name}" updated successfully.`
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - properties: { data: { $ref: "#/components/schemas/Category" } }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/CatalogueNotFound" }
+        "409": { $ref: "#/components/responses/CatalogueConflict" }
+    delete:
+      operationId: categoriesDelete
+      tags: [catalogue]
+      summary: Delete a category. 409 category_protected (Other) or category_in_use (referenced by violations). Permission categories:manage.
+      security: [{ bearerAuth: [] }]
+      x-roles: [Administrator]
+      responses:
+        "200":
+          description: Deleted; data = { id }
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - properties: { data: { type: object, properties: { id: { type: string, format: uuid } } } }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/CatalogueNotFound" }
+        "409": { $ref: "#/components/responses/CatalogueConflict" }
+  /v1/owners:
+    get:
+      operationId: ownersList
+      tags: [catalogue]
+      summary: List owners in insertion order (SCR-11). Permission owners:manage.
+      security: [{ bearerAuth: [] }]
+      x-roles: [Administrator]
+      parameters:
+        - { name: search, in: query, schema: { type: string, maxLength: 100 } }
+        - { $ref: "#/components/parameters/CataloguePage" }
+        - { $ref: "#/components/parameters/CataloguePageSize" }
+      responses:
+        "200":
+          description: Page of owners
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - properties: { data: { $ref: "#/components/schemas/OwnerPage" } }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    post:
+      operationId: ownersCreate
+      tags: [catalogue]
+      summary: Add an owner. Permission owners:manage.
+      security: [{ bearerAuth: [] }]
+      x-roles: [Administrator]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/OwnerBody" } } }
+      responses:
+        "201":
+          description: Created; message `Owner "{name}" added successfully.`
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - properties: { data: { $ref: "#/components/schemas/Owner" } }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409": { $ref: "#/components/responses/CatalogueConflict" }
+  /v1/owners/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      operationId: ownersGet
+      tags: [catalogue]
+      summary: One owner. Permission owners:manage.
+      security: [{ bearerAuth: [] }]
+      x-roles: [Administrator]
+      responses:
+        "200":
+          description: Owner
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - properties: { data: { $ref: "#/components/schemas/Owner" } }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/CatalogueNotFound" }
+    put:
+      operationId: ownersUpdate
+      tags: [catalogue]
+      summary: Replace an owner (categories follow the rename via owner_id). Permission owners:manage.
+      security: [{ bearerAuth: [] }]
+      x-roles: [Administrator]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/OwnerBody" } } }
+      responses:
+        "200":
+          description: Updated; message `Owner "{name}" updated successfully.`
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - properties: { data: { $ref: "#/components/schemas/Owner" } }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/CatalogueNotFound" }
+        "409": { $ref: "#/components/responses/CatalogueConflict" }
+    delete:
+      operationId: ownersDelete
+      tags: [catalogue]
+      summary: Delete an owner. 409 owner_in_use while categories reference it. Permission owners:manage.
+      security: [{ bearerAuth: [] }]
+      x-roles: [Administrator]
+      responses:
+        "200":
+          description: Deleted; data = { id }
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - properties: { data: { type: object, properties: { id: { type: string, format: uuid } } } }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/CatalogueNotFound" }
+        "409": { $ref: "#/components/responses/CatalogueConflict" }
+  /v1/config:
+    get:
+      operationId: configGet
+      tags: [catalogue]
+      summary: Badge Name for the Config screen (SCR-12). Public read is GET /v1/public/config. Permission config:manage.
+      security: [{ bearerAuth: [] }]
+      x-roles: [Administrator]
+      responses:
+        "200":
+          description: Config
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - properties: { data: { $ref: "#/components/schemas/Config" } }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    put:
+      operationId: configUpdate
+      tags: [catalogue]
+      summary: Set the Badge Name. Message `Config updated. Badge Name set to "{value}".` Permission config:manage.
+      security: [{ bearerAuth: [] }]
+      x-roles: [Administrator]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [badgeName]
+              additionalProperties: false
+              properties:
+                badgeName: { type: string, minLength: 1, maxLength: 100, description: "Trimmed, < and > stripped" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - properties: { data: { $ref: "#/components/schemas/Config" } }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /v1/portal-users:
+    get:
+      operationId: portalUsersList
+      tags: [users]
+      summary: List portal users, newest last, server-side paging and search (SCR-20)
+      security: [{ bearerAuth: [] }]
+      x-roles: [Administrator]
+      x-permission: portal-users:manage
+      parameters:
+        - { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+        - { name: perPage, in: query, schema: { type: integer, enum: [10, 25, 50, 100], default: 10 } }
+        - { name: search, in: query, schema: { type: string, maxLength: 100 }, description: Substring match done server-side }
+      responses:
+        "200":
+          description: One page plus paging meta
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - properties:
+                      data:
+                        type: object
+                        required: [items, meta]
+                        properties:
+                          items: { type: array, items: { $ref: "#/components/schemas/PortalUserAdmin" } }
+                          meta: { $ref: "#/components/schemas/PageMeta" }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    post:
+      operationId: portalUsersCreate
+      tags: [users]
+      summary: Create a portal user; password hashed, must be changed at first sign-in
+      security: [{ bearerAuth: [] }]
+      x-roles: [Administrator]
+      x-permission: portal-users:manage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreatePortalUser" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - properties: { data: { $ref: "#/components/schemas/PortalUserAdmin" } }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409": { $ref: "#/components/responses/Conflict" }
+  /v1/portal-users/{id}:
+    get:
+      operationId: portalUsersGet
+      tags: [users]
+      summary: Get one portal user
+      security: [{ bearerAuth: [] }]
+      x-roles: [Administrator]
+      x-permission: portal-users:manage
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200":
+          description: Result
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - properties: { data: { $ref: "#/components/schemas/PortalUserAdmin" } }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    put:
+      operationId: portalUsersUpdate
+      tags: [users]
+      summary: Replace a portal user (blank password keeps the current one)
+      security: [{ bearerAuth: [] }]
+      x-roles: [Administrator]
+      x-permission: portal-users:manage
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UpdatePortalUser" }
+      responses:
+        "200":
+          description: Result
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - properties: { data: { $ref: "#/components/schemas/PortalUserAdmin" } }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+    delete:
+      operationId: portalUsersDelete
+      tags: [users]
+      summary: Soft-delete a portal user (not yourself, not the last active Administrator); sessions revoked
+      security: [{ bearerAuth: [] }]
+      x-roles: [Administrator]
+      x-permission: portal-users:manage
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - properties: { data: { type: "null" } }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+  /v1/portal-users/{id}/reset-password:
+    post:
+      operationId: portalUsersResetPassword
+      tags: [users]
+      summary: Send a single-use reset link to the user (existing auth reset flow); the link is never returned
+      security: [{ bearerAuth: [] }]
+      x-roles: [Administrator]
+      x-permission: portal-users:manage
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200":
+          description: Link sent
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - properties: { data: { type: "null" } }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+  /v1/app-users:
+    get:
+      operationId: appUsersList
+      tags: [users]
+      summary: List app users with MASKED phones, server-side paging and search over the unmasked phone (SCR-21)
+      security: [{ bearerAuth: [] }]
+      x-roles: [Administrator]
+      x-permission: app-users:manage
+      parameters:
+        - { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+        - { name: perPage, in: query, schema: { type: integer, enum: [10, 25, 50, 100], default: 10 } }
+        - { name: search, in: query, schema: { type: string, maxLength: 100 }, description: Substring match done server-side }
+      responses:
+        "200":
+          description: One page plus paging meta
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - properties:
+                      data:
+                        type: object
+                        required: [items, meta]
+                        properties:
+                          items: { type: array, items: { $ref: "#/components/schemas/AppUserView" } }
+                          meta: { $ref: "#/components/schemas/PageMeta" }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    post:
+      operationId: appUsersCreate
+      tags: [users]
+      summary: Create an app user (phone required)
+      security: [{ bearerAuth: [] }]
+      x-roles: [Administrator]
+      x-permission: app-users:manage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AppUserWrite" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - properties: { data: { $ref: "#/components/schemas/AppUserView" } }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409": { $ref: "#/components/responses/Conflict" }
+  /v1/app-users/{id}:
+    get:
+      operationId: appUsersGet
+      tags: [users]
+      summary: Get one app user (masked phone)
+      security: [{ bearerAuth: [] }]
+      x-roles: [Administrator]
+      x-permission: app-users:manage
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200":
+          description: Result
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - properties: { data: { $ref: "#/components/schemas/AppUserView" } }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    put:
+      operationId: appUsersUpdate
+      tags: [users]
+      summary: Update an app user; omitted phone/points are unchanged; redeemed must not exceed earned
+      security: [{ bearerAuth: [] }]
+      x-roles: [Administrator]
+      x-permission: app-users:manage
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AppUserWrite" }
+      responses:
+        "200":
+          description: Result
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - properties: { data: { $ref: "#/components/schemas/AppUserView" } }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+    delete:
+      operationId: appUsersDelete
+      tags: [users]
+      summary: Soft-delete an app user
+      security: [{ bearerAuth: [] }]
+      x-roles: [Administrator]
+      x-permission: app-users:manage
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - properties: { data: { type: "null" } }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /v1/app-users/{id}/reveal-phone:
+    post:
+      operationId: appUsersRevealPhone
+      tags: [users]
+      summary: Reveal the full phone number; the access is written to the audit log before the number is returned
+      security: [{ bearerAuth: [] }]
+      x-roles: [Administrator]
+      x-permission: violations:reveal-phone
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200":
+          description: Result
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - properties: { data: { $ref: "#/components/schemas/RevealedPhone" } }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /v1/profile:
+    get:
+      operationId: profileGet
+      tags: [users]
+      summary: Own profile (SCR-22). Usable while a password change is required.
+      security: [{ bearerAuth: [] }]
+      x-roles: [Administrator, ViolationManager]
+      x-permission: profile:read
+      responses:
+        "200":
+          description: Result
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - properties: { data: { $ref: "#/components/schemas/PortalUserAdmin" } }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    put:
+      operationId: profileUpdate
+      tags: [users]
+      summary: Update own name, phone and address (e-mail, role, level are not self-editable)
+      security: [{ bearerAuth: [] }]
+      x-roles: [Administrator, ViolationManager]
+      x-permission: profile:read
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UpdateProfile" }
+      responses:
+        "200":
+          description: Result
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - properties: { data: { $ref: "#/components/schemas/PortalUserAdmin" } }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409": { $ref: "#/components/responses/Conflict" }
+  /v1/profile/change-password:
+    post:
+      operationId: profileChangePassword
+      tags: [users]
+      summary: "Change own password (verifies the current password, applies the shared policy, revokes every OTHER session, clears mustChangePassword)"
+      security: [{ bearerAuth: [] }]
+      x-roles: [Administrator, ViolationManager]
+      x-permission: password:change
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ChangePassword" }
+      responses:
+        "200":
+          description: Password updated
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - properties: { data: { type: "null" } }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
         "429": { $ref: "#/components/responses/TooManyRequests" }

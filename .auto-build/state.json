@@ -66,6 +66,14 @@
         "e2e": 20,
         "failed": 0
       }
+    },
+    "catalogue": {
+      "backend": "merged",
+      "backendTests": {
+        "unit": 14,
+        "e2e": 49,
+        "failed": 0
+      }
     }
   },
   "run": {
