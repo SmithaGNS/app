@@ -1,0 +1,392 @@
+{
+  "generated_by": {
+    "plugin": "ux-prototype-to-screen-stories",
+    "version": "3.4.0",
+    "generator": "build_pack.py"
+  },
+  "screen_id": "SCR-22",
+  "screen_name": "My Profile and Change password",
+  "route": "#profile",
+  "module": "Users",
+  "nav_label": "(none) — profile card in sidebar, or avatar menu → Profile",
+  "priority": "must",
+  "derived": false,
+  "actors": [
+    "any signed-in portal user"
+  ],
+  "story": "screen-stories/05-users/SCR-22-profile-change-password.md",
+  "screenshots": [
+    "screen-stories/screenshots/profile.png",
+    "screen-stories/screenshots/profile--fold.png",
+    "screen-stories/screenshots/profile--partial-password.png",
+    "screen-stories/screenshots/profile--errors.png",
+    "screen-stories/screenshots/profile--success.png",
+    "screen-stories/screenshots/menu-account.png"
+  ],
+  "embedded_images": [
+    "screen-stories/screenshots/profile.png",
+    "screen-stories/screenshots/profile.png",
+    "screen-stories/screenshots/profile--partial-password.png",
+    "screen-stories/screenshots/profile--errors.png",
+    "screen-stories/screenshots/profile--success.png",
+    "screen-stories/screenshots/menu-account.png"
+  ],
+  "actions": [
+    {
+      "control": "Avatar menu → Profile",
+      "kind": "Menu item",
+      "outcome": "Closes the menu and displays this screen with cleared fields",
+      "goes_to": "this screen",
+      "who_may": "any signed-in user",
+      "disabled_when": "never"
+    },
+    {
+      "control": "Sidebar profile card",
+      "kind": "Button",
+      "outcome": "Same as above, no menu",
+      "goes_to": "this screen",
+      "who_may": "any signed-in user",
+      "disabled_when": "never"
+    },
+    {
+      "control": "👁 / 🙈 on Current, New, Confirm",
+      "kind": "Toggle buttons data-pw-toggle, aria-label \"Show password\" / \"Hide password\", aria-pressed",
+      "outcome": "Swaps that one field between masked and plain text. Reset to masked every time the screen is entered or a save succeeds",
+      "goes_to": "—",
+      "who_may": "any",
+      "disabled_when": "never"
+    },
+    {
+      "control": "Update password",
+      "kind": "Button (green) data-action=\"save-change-password\"",
+      "outcome": "Runs the validation below. If all pass: clears all fields, resets toggles and checklist, shows the toast. Nothing is sent or stored: no current-password check, no new-password store, no sign-out of other sessions, no email notice",
+      "goes_to": "stays here",
+      "who_may": "any signed-in user, own account only",
+      "disabled_when": "never (always pressable). Exercised on the running prototype (Playwright): with valid Current, New and Confirm values, pressing Enter in Confirm shows the toast \"Password updated successfully.\" and clears the fields; with Current empty and New \"abc\", pressing Enter in Current shows \"Current password is required.\" and, under New password, \"Password does not meet all the requirements.\". The untyped button is the form's default submit button, so Enter fires the same handler as a click; the onsubmit=\"return false\" form never navigates"
+    },
+    {
+      "control": "Cancel",
+      "kind": "Button (grey) data-go=\"dashboard\"",
+      "outcome": "Leaves for the dashboard; typed values are not saved and are wiped on the next entry",
+      "goes_to": "Dashboard",
+      "who_may": "any",
+      "disabled_when": "never"
+    }
+  ],
+  "validation": [
+    {
+      "field": "Current password (cp-current)",
+      "rule": "Required (truthy value; not trimmed, so a single space passes)",
+      "status": "declared (code)",
+      "when": "Update",
+      "message": "\"Current password is required.\""
+    },
+    {
+      "field": "Current password",
+      "rule": "Must equal the account's existing password; locked out after N failed attempts",
+      "status": "PROPOSED",
+      "when": "Update",
+      "message": "\"Current password is incorrect.\""
+    },
+    {
+      "field": "Current password",
+      "rule": "Max 128 characters (no point accepting more than a new password can be)",
+      "status": "PROPOSED",
+      "when": "on input",
+      "message": "none (silently capped)"
+    },
+    {
+      "field": "New password (cp-new)",
+      "rule": "Required",
+      "status": "declared",
+      "when": "Update",
+      "message": "\"New password is required.\""
+    },
+    {
+      "field": "New password",
+      "rule": "Min 12 characters",
+      "status": "declared (PASSWORD_MIN)",
+      "when": "live checklist; Update",
+      "message": "row \"At least 12 characters\"; on submit \"Password does not meet all the requirements.\""
+    },
+    {
+      "field": "New password",
+      "rule": "Max 128 characters",
+      "status": "declared (PASSWORD_MAX; \"Maximum 128 characters.\" hint)",
+      "when": "live; Update",
+      "message": "hint, then \"Password does not meet all the requirements.\""
+    },
+    {
+      "field": "New password",
+      "rule": "At least one of each: uppercase A–Z, lowercase a–z, digit 0–9, and a symbol from ! @ # $ % ^ & * ( ) _ + - = [ ] { } \\| ; ' : \" , . < > ? (ASCII only; space, ~, `  `, /, \\ do not count; the UI says only \"(!@#$…)\") | declared (PASSWORD_RULES`) | live; Update | as above",
+      "status": "unstated",
+      "when": "",
+      "message": ""
+    },
+    {
+      "field": "New password",
+      "rule": "Must differ from Current password (exact string compare)",
+      "status": "declared",
+      "when": "Update, only after all other fields pass",
+      "message": "\"New password must be different from the current one.\" (shown under New password)"
+    },
+    {
+      "field": "New password",
+      "rule": "Must not contain the user's name or email; not in a common/breached list; not equal to the last N passwords; maximum age / expiry",
+      "status": "PROPOSED",
+      "when": "Update, server-side",
+      "message": "OQ-22-04"
+    },
+    {
+      "field": "Confirm new password (cp-confirm)",
+      "rule": "Required",
+      "status": "declared",
+      "when": "Update",
+      "message": "\"Please confirm your new password.\""
+    },
+    {
+      "field": "Confirm new password",
+      "rule": "Must equal New password exactly",
+      "status": "declared",
+      "when": "Update",
+      "message": "\"Passwords do not match.\""
+    },
+    {
+      "field": "All three",
+      "rule": "Inputs are type=password with autocomplete current-password / new-password / new-password (password managers supported). </> stripping does not apply to password inputs",
+      "status": "declared",
+      "when": "—",
+      "message": "—"
+    },
+    {
+      "field": "Password expiry and history",
+      "rule": "No policy stated",
+      "status": "OQ-22-04",
+      "when": "",
+      "message": ""
+    },
+    {
+      "field": "Profile details",
+      "rule": "No edit capability; may a user change their own phone/email?",
+      "status": "OQ-22-02",
+      "when": "",
+      "message": ""
+    }
+  ],
+  "states": [
+    {
+      "state": "profile--fold.png",
+      "when": "a crop of the same render as profile.png, embedded above as the default state; adds no state",
+      "shows": ""
+    },
+    {
+      "state": "Populated",
+      "when": "always",
+      "shows": "The details card is hard-coded text: nothing is read from data"
+    },
+    {
+      "state": "Empty / loading / error (load)",
+      "when": "n/a",
+      "shows": "None exist. Undefined — OQ-22-02"
+    },
+    {
+      "state": "Save failure",
+      "when": "wrong current password, network",
+      "shows": "Cannot occur: the current password is never checked. Undefined — OQ-22-03"
+    },
+    {
+      "state": "Permission denied",
+      "when": "n/a",
+      "shows": "Every role sees the same hard-coded \"Admin Admin / Administrator\". Undefined — OQ-22-02"
+    }
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "ST-SCR-22-01",
+      "title": "Open Profile from the avatar menu",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "I am signed in on any screen"
+        },
+        {
+          "keyword": "When",
+          "text": "I press the \"Admin Admin ▾\" avatar and choose Profile"
+        },
+        {
+          "keyword": "Then",
+          "text": "My Profile shows with Email itdept@ta.org.jm, Phone +1 876 555 0100, Role Administrator, Level — and Last login 2026-10-22 16:08"
+        },
+        {
+          "keyword": "And",
+          "text": "the three password fields are empty and masked"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-22-02",
+      "title": "Checklist follows typing",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "I am on My Profile"
+        },
+        {
+          "keyword": "When",
+          "text": "I type \"Abcdefghij1\" into New password"
+        },
+        {
+          "keyword": "Then",
+          "text": "\"An uppercase letter\", \"A lowercase letter\" and \"A number\" are ticked green, \"At least 12 characters\" and \"A special character\" are not"
+        },
+        {
+          "keyword": "And",
+          "text": "the label reads \"Good\""
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-22-03",
+      "title": "Strong password lights everything",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "I am on My Profile"
+        },
+        {
+          "keyword": "When",
+          "text": "I type \"Abcdefghijk1!\" into New password"
+        },
+        {
+          "keyword": "Then",
+          "text": "all five rules are ticked, four segments are green and the label reads \"Strong\""
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-22-04",
+      "title": "Submit with problems shows all errors",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "Current password is empty, New password is \"Abcdefghijk1!\" and Confirm is \"x\""
+        },
+        {
+          "keyword": "When",
+          "text": "I press Update password"
+        },
+        {
+          "keyword": "Then",
+          "text": "\"Current password is required.\" shows under Current password and \"Passwords do not match.\" under Confirm"
+        },
+        {
+          "keyword": "And",
+          "text": "focus moves to Current password and no toast appears"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-22-05",
+      "title": "Weak new password rejected",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "Current \"OldPassw0rd!x\", New \"abc\", Confirm \"abc\""
+        },
+        {
+          "keyword": "When",
+          "text": "I press Update password"
+        },
+        {
+          "keyword": "Then",
+          "text": "\"Password does not meet all the requirements.\" shows under New password and the fields keep their values"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-22-06",
+      "title": "New must differ from current",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "Current, New and Confirm all hold \"Abcdefghijk1!\""
+        },
+        {
+          "keyword": "When",
+          "text": "I press Update password"
+        },
+        {
+          "keyword": "Then",
+          "text": "\"New password must be different from the current one.\" shows under New password"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-22-07",
+      "title": "Successful change",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "Current \"OldPassw0rd!x\", New \"Abcdefghijk1!\", Confirm \"Abcdefghijk1!\""
+        },
+        {
+          "keyword": "When",
+          "text": "I press Update password"
+        },
+        {
+          "keyword": "Then",
+          "text": "all three fields empty, the checklist returns to unticked, and a toast reads \"Password updated successfully.\""
+        },
+        {
+          "keyword": "And",
+          "text": "I remain on My Profile, still signed in"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-22-08",
+      "title": "Reveal toggle is per field",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "I am on My Profile"
+        },
+        {
+          "keyword": "When",
+          "text": "I press the eye in New password"
+        },
+        {
+          "keyword": "Then",
+          "text": "only New password shows plain text and its label reads \"Hide password\"; the other two stay masked"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-22-09",
+      "title": "Cancel leaves without saving",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "I typed a value in New password"
+        },
+        {
+          "keyword": "When",
+          "text": "I press Cancel"
+        },
+        {
+          "keyword": "Then",
+          "text": "the Dashboard shows, and re-opening Profile shows empty fields"
+        }
+      ]
+    }
+  ],
+  "open_questions": [],
+  "capture": {
+    "controls": 8,
+    "dead_controls": 0,
+    "tables": 0,
+    "stat_tiles": 0,
+    "role_variants": [],
+    "forms": 1
+  }
+}

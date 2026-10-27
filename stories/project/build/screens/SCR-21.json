@@ -1,0 +1,513 @@
+{
+  "generated_by": {
+    "plugin": "ux-prototype-to-screen-stories",
+    "version": "3.4.0",
+    "generator": "build_pack.py"
+  },
+  "screen_id": "SCR-21",
+  "screen_name": "App user list (with Add/Edit App User dialog)",
+  "route": "#appusers",
+  "module": "Users",
+  "nav_label": "App user List",
+  "priority": "must",
+  "derived": false,
+  "actors": [
+    "any signed-in portal user"
+  ],
+  "story": "screen-stories/05-users/SCR-21-app-user-list.md",
+  "screenshots": [
+    "screen-stories/screenshots/appusers.png",
+    "screen-stories/screenshots/appusers--fold.png",
+    "screen-stories/screenshots/modal-app-add.png",
+    "screen-stories/screenshots/modal-app-add-invalid.png",
+    "screen-stories/screenshots/modal-app-edit.png"
+  ],
+  "embedded_images": [
+    "screen-stories/screenshots/appusers.png",
+    "screen-stories/screenshots/appusers.png",
+    "screen-stories/screenshots/modal-app-add.png",
+    "screen-stories/screenshots/modal-app-add-invalid.png",
+    "screen-stories/screenshots/modal-app-edit.png"
+  ],
+  "actions": [
+    {
+      "control": "Search app users",
+      "kind": "Search input",
+      "outcome": "Client-side substring filter on each row's rendered text, across the 10 loaded rows only. Because phones are masked in the text, searching a full phone number finds nothing; only the last 3 digits (or a revealed number) match. Does not search the other 3,113 users",
+      "goes_to": "—",
+      "who_may": "any signed-in user (prototype enforces nothing)",
+      "disabled_when": "—"
+    },
+    {
+      "control": "CSV / Excel / Print",
+      "kind": "Buttons",
+      "outcome": "Wired to nothing",
+      "goes_to": "—",
+      "who_may": "—",
+      "disabled_when": "never"
+    },
+    {
+      "control": "＋ Add App User",
+      "kind": "Button (primary) data-action=\"app-add\"",
+      "outcome": "Shows the Add App User dialog, blank, points 0, Save disabled",
+      "goes_to": "dialog app-modal",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only PROPOSED, OQ-21-02)",
+      "disabled_when": "never"
+    },
+    {
+      "control": "👁 (phone cell) aria-label \"Show full phone number\"",
+      "kind": "Toggle data-mobile-toggle",
+      "outcome": "Reveals the whole number in that row; second press re-masks; label flips to \"Hide full phone number\"",
+      "goes_to": "—",
+      "who_may": "any signed-in user (prototype enforces nothing)",
+      "disabled_when": "never"
+    },
+    {
+      "control": "✎ (row) aria-label \"Edit app user {full phone}\"",
+      "kind": "Icon button data-app-edit",
+      "outcome": "Shows the Edit dialog with that row's values. The aria-label and title contain the unmasked phone number, defeating the masking for screen readers and DOM inspection",
+      "goes_to": "dialog app-modal",
+      "who_may": "any signed-in user (prototype enforces nothing)",
+      "disabled_when": "never"
+    },
+    {
+      "control": "Show [10 ▾] entries",
+      "kind": "Select 10/25/50/100",
+      "outcome": "Wired to nothing",
+      "goes_to": "—",
+      "who_may": "—",
+      "disabled_when": "never"
+    },
+    {
+      "control": "Previous, 1, 2, 3, …, 313, Next",
+      "kind": "Pagination buttons",
+      "outcome": "Wired to nothing; Previous looks enabled although page 1 is current",
+      "goes_to": "—",
+      "who_may": "—",
+      "disabled_when": "never (should be Previous on page 1)"
+    },
+    {
+      "control": "× / Cancel / Esc / backdrop",
+      "kind": "Dismiss",
+      "outcome": "Close the dialog and discard typed input, no confirmation",
+      "goes_to": "—",
+      "who_may": "—",
+      "disabled_when": "never"
+    },
+    {
+      "control": "Save",
+      "kind": "Button (green) data-action=\"save-app\"",
+      "outcome": "Re-validates Phone No, builds the user from trimmed text and Number(points) \\|\\| 0, appends (Add) or replaces that array row (Edit), redraws the table, closes the dialog and toasts App user {phone} added successfully. or App user {phone} updated successfully. (the toast shows the full phone)",
+      "goes_to": "back to this list",
+      "who_may": "any signed-in user (prototype enforces nothing)",
+      "disabled_when": "Phone No empty or non-digits (recomputed on every keystroke)"
+    },
+    {
+      "control": "Edit app user 1234567",
+      "kind": "1",
+      "outcome": "Shows the Edit App User dialog for row 1 (same as ✎ above)",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "Edit app user 4822979",
+      "kind": "2",
+      "outcome": "Shows the Edit App User dialog for row 2 (same as ✎ above)",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "Edit app user 8921990",
+      "kind": "3",
+      "outcome": "Shows the Edit App User dialog for row 3 (same as ✎ above)",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "Edit app user 7004346",
+      "kind": "4",
+      "outcome": "Shows the Edit App User dialog for row 4 (same as ✎ above)",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "Edit app user 2377075",
+      "kind": "5",
+      "outcome": "Shows the Edit App User dialog for row 5 (same as ✎ above)",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "Edit app user 4144702",
+      "kind": "6",
+      "outcome": "Shows the Edit App User dialog for row 6 (same as ✎ above)",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "Edit app user 2017359",
+      "kind": "7",
+      "outcome": "Shows the Edit App User dialog for row 7 (same as ✎ above)",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "Edit app user 3994758",
+      "kind": "8",
+      "outcome": "Shows the Edit App User dialog for row 8 (same as ✎ above)",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "Edit app user 2885580",
+      "kind": "9",
+      "outcome": "Shows the Edit App User dialog for row 9 (same as ✎ above)",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "Edit app user 5434052",
+      "kind": "10",
+      "outcome": "Shows the Edit App User dialog for row 10 (same as ✎ above)",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "CSV, Excel, Print",
+      "kind": "Unbuilt scope (also on SCR-20) — export of citizen phone numbers is a data-protection decision",
+      "outcome": "OQ-21-05",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "Page-size select, Previous/1/2/3/…/313/Next",
+      "kind": "Unbuilt; with 3,123 users this is the only way to reach 99.7% of the data",
+      "outcome": "OQ-21-06",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    }
+  ],
+  "validation": [
+    {
+      "field": "Search app users",
+      "rule": "Free text; substring match on the rendered (masked) row text; empty shows all rows; max 100 characters (same PROPOSED list-search limit as SCR-06/10/11/13; see OQ-21-12)",
+      "status": "PROPOSED",
+      "when": "on input",
+      "message": "—"
+    },
+    {
+      "field": "Show 10 25 50 100 entries",
+      "rule": "Closed set: 10, 25, 50 or 100, default 10; currently wired to nothing",
+      "status": "declared (select options)",
+      "when": "on change",
+      "message": "—"
+    },
+    {
+      "field": "First Name",
+      "rule": "Optional free text, trimmed; max 60 characters; Unicode letters, space, hyphen, apostrophe",
+      "status": "PROPOSED",
+      "when": "blur",
+      "message": "PROPOSED \"First Name must be 60 characters or fewer.\""
+    },
+    {
+      "field": "Last Name",
+      "rule": "Optional, trimmed; max 60, same set",
+      "status": "PROPOSED",
+      "when": "blur",
+      "message": "PROPOSED \"Last Name must be 60 characters or fewer.\""
+    },
+    {
+      "field": "Email",
+      "rule": "Optional; if present must match ^\\S+@\\S+\\.\\S+$ (type=\"email\"). Checked on blur only: not on Save and not in the Save-enabled test (the field carries none of data-req/data-pattern/data-min, which both checks scan), so an invalid email can be saved after the message appears (defect, OQ-21-08). Max 254 characters; unique among app users, case-insensitive (server-side)",
+      "status": "PROPOSED",
+      "when": "blur only",
+      "message": "\"Please enter a valid email address.\" / PROPOSED \"Email must be 254 characters or fewer.\" / PROPOSED \"An app user with this email already exists.\""
+    },
+    {
+      "field": "Phone No",
+      "rule": "Required (trimmed); digits only ^[0-9]+$ (inputmode=\"numeric\"). Min 7, max 15 digits (seed values are all 7 digits; the masking function assumes at least 4). Unique among app users (the de facto identifier; the Edit button is labelled by it; server-side)",
+      "status": "PROPOSED",
+      "when": "blur; Save-enabled",
+      "message": "\"Phone No is required.\" / \"Phone No must be digits only.\" / PROPOSED \"Phone No must be 7 to 15 digits.\" / PROPOSED \"That phone number is already registered.\" (OQ-21-09)"
+    },
+    {
+      "field": "Earner Points",
+      "rule": "Whole number, minimum 0 (declared), default 0; maximum 1,000,000 and integers only (no decimals). Empty or non-numeric saves as 0 (Number(v) \\|\\| 0)",
+      "status": "PROPOSED",
+      "when": "native spinner only (declared); on change (proposed)",
+      "message": "PROPOSED \"Enter a whole number from 0 to 1,000,000.\""
+    },
+    {
+      "field": "Reedemed Points",
+      "rule": "Whole number, minimum 0 (declared), default 0; maximum 1,000,000; must not exceed Earner Points",
+      "status": "PROPOSED",
+      "when": "native spinner only (declared); on change/save (proposed)",
+      "message": "PROPOSED \"Redeemed points cannot exceed earned points.\""
+    },
+    {
+      "field": "Earner / Reedemed Points",
+      "rule": "Whether an admin may edit points at all (they are normally derived from verified reports and redemptions)",
+      "status": "OQ-21-10",
+      "when": "",
+      "message": ""
+    },
+    {
+      "field": "Address",
+      "rule": "Column with no field or data",
+      "status": "OQ-21-04",
+      "when": "",
+      "message": ""
+    }
+  ],
+  "states": [
+    {
+      "state": "Populated",
+      "when": "10 loaded rows of 3,123",
+      "shows": "As above"
+    },
+    {
+      "state": "After Add",
+      "when": "a user is saved",
+      "shows": "New row appended at the end of the in-memory page (row 11), footer becomes \"Showing 1 to 11 of 3,123 entries\" (the total is a constant and is not incremented)"
+    },
+    {
+      "state": "Search no match",
+      "when": "text matches no row",
+      "shows": "All rows hidden, no message, footer unchanged. Undefined — OQ-21-06"
+    },
+    {
+      "state": "Empty",
+      "when": "no users",
+      "shows": "Not reachable (no delete exists). Undefined — OQ-21-06"
+    },
+    {
+      "state": "Loading / Error",
+      "when": "—",
+      "shows": "None exist; data is a hard-coded array. Undefined — OQ-21-07"
+    },
+    {
+      "state": "Permission denied",
+      "when": "—",
+      "shows": "No role check anywhere. Undefined — OQ-21-02"
+    },
+    {
+      "state": "Phone revealed",
+      "when": "👁 pressed on a row",
+      "shows": "Cell shows full number, icon turns 🙈, aria-pressed=\"true\", aria-label \"Hide full phone number\"; revealed state is lost on any re-render (after Add or Edit all rows re-mask)"
+    },
+    {
+      "state": "appusers--fold.png",
+      "when": "a crop of the same render as appusers.png, embedded above; adds no state",
+      "shows": ""
+    }
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "ST-SCR-21-01",
+      "title": "List shows 10 of 3,123",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "I open App user List"
+        },
+        {
+          "keyword": "When",
+          "text": "the page loads"
+        },
+        {
+          "keyword": "Then",
+          "text": "10 rows show with S No 1 to 10, phones ····567, ····979, ····990, ····346, ····075, ····702, ····359, ····758, ····580, ····052"
+        },
+        {
+          "keyword": "And",
+          "text": "the footer reads \"Showing 1 to 10 of 3,123 entries\" and every Earner and Reedemed cell reads 0"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-21-02",
+      "title": "Reveal and re-mask a phone",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "row 1 shows ····567"
+        },
+        {
+          "keyword": "When",
+          "text": "I press its eye icon"
+        },
+        {
+          "keyword": "Then",
+          "text": "the cell reads 1234567 and the icon's label becomes \"Hide full phone number\""
+        },
+        {
+          "keyword": "And",
+          "text": "pressing again returns ····567"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-21-03",
+      "title": "Add dialog opens with Save disabled",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "I press ＋ Add App User"
+        },
+        {
+          "keyword": "When",
+          "text": "the dialog appears"
+        },
+        {
+          "keyword": "Then",
+          "text": "the title is \"Add App User\", Earner and Reedemed Points read 0, Phone No is empty and Save is disabled"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-21-04",
+      "title": "Phone must be digits",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "the Add dialog is open"
+        },
+        {
+          "keyword": "When",
+          "text": "I type \"12ab\" into Phone No and tab away"
+        },
+        {
+          "keyword": "Then",
+          "text": "\"Phone No must be digits only.\" shows beneath it and Save stays disabled"
+        },
+        {
+          "keyword": "And",
+          "text": "replacing it with \"8761234567\" clears the message and enables Save"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-21-05",
+      "title": "Add an app user",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "the Add dialog holds Phone \"8761234567\", First \"Ann\", Last \"Lee\""
+        },
+        {
+          "keyword": "When",
+          "text": "I press Save"
+        },
+        {
+          "keyword": "Then",
+          "text": "the dialog closes, an 11th row appears with the phone masked •••••••567 (seven dots for the ten digits, last three visible), and a toast reads \"App user 8761234567 added successfully.\""
+        },
+        {
+          "keyword": "And",
+          "text": "the footer reads \"Showing 1 to 11 of 3,123 entries\""
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-21-06",
+      "title": "Edit shows the unmasked phone",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "I press ✎ on row 1"
+        },
+        {
+          "keyword": "When",
+          "text": "the dialog opens"
+        },
+        {
+          "keyword": "Then",
+          "text": "the title is \"Edit App User\", Phone No holds 1234567 and Save is enabled"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-21-07",
+      "title": "Edit points",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "the Edit dialog for row 1 is open"
+        },
+        {
+          "keyword": "When",
+          "text": "I set Earner Points to 50 and press Save"
+        },
+        {
+          "keyword": "Then",
+          "text": "row 1 shows Earner Points 50 and the toast reads \"App user 1234567 updated successfully.\""
+        },
+        {
+          "keyword": "And",
+          "text": "every row's phone is masked again"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-21-08",
+      "title": "Search matches on visible text only",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "the list is shown"
+        },
+        {
+          "keyword": "When",
+          "text": "I type \"567\" into Search app users"
+        },
+        {
+          "keyword": "Then",
+          "text": "only row 1 stays visible"
+        },
+        {
+          "keyword": "And",
+          "text": "typing \"1234567\" shows no rows, because the text on screen is ····567"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-21-09",
+      "title": "Dead controls do nothing",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "the list is shown"
+        },
+        {
+          "keyword": "When",
+          "text": "I press CSV, Excel, Print, page 2 or change \"Show\" to 50"
+        },
+        {
+          "keyword": "Then",
+          "text": "nothing changes on screen (prototype behaviour to be replaced, see OQ-21-05, OQ-21-06)"
+        }
+      ]
+    }
+  ],
+  "open_questions": [],
+  "capture": {
+    "controls": 33,
+    "dead_controls": 10,
+    "tables": 1,
+    "stat_tiles": 0,
+    "role_variants": [],
+    "forms": 0
+  }
+}

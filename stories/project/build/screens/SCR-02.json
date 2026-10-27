@@ -1,0 +1,300 @@
+{
+  "generated_by": {
+    "plugin": "ux-prototype-to-screen-stories",
+    "version": "3.4.0",
+    "generator": "build_pack.py"
+  },
+  "screen_id": "SCR-02",
+  "screen_name": "OTP verification",
+  "route": "#otp (section #otp; two modes: login, reset)",
+  "module": "Auth",
+  "nav_label": "none (pre-authentication)",
+  "priority": "must",
+  "derived": false,
+  "actors": [
+    "Portal user"
+  ],
+  "story": "screen-stories/01-auth/SCR-02-otp-verification.md",
+  "screenshots": [
+    "screen-stories/screenshots/auth-otp-reset.png",
+    "screen-stories/screenshots/auth-otp-error.png",
+    "screen-stories/screenshots/auth-otp-reset-done.png",
+    "screen-stories/screenshots/auth-otp-login.png"
+  ],
+  "embedded_images": [
+    "screen-stories/screenshots/auth-otp-reset.png",
+    "screen-stories/screenshots/auth-otp-reset.png",
+    "screen-stories/screenshots/auth-otp-error.png",
+    "screen-stories/screenshots/auth-otp-reset-done.png",
+    "screen-stories/screenshots/auth-otp-login.png"
+  ],
+  "actions": [
+    {
+      "control": "Digit boxes 1-6 (aria-label Digit 1..6)",
+      "kind": "Numeric inputs, maxlength 1",
+      "outcome": "Non-digits removed on input; a digit auto-advances to the next box; Backspace on an empty box and ArrowLeft move back; ArrowRight moves forward; paste fills all boxes from the first 6 digits found",
+      "goes_to": "—",
+      "who_may": "anyone",
+      "disabled_when": "—"
+    },
+    {
+      "control": "Verify",
+      "kind": "Primary button",
+      "outcome": "Joins the boxes. If not exactly 6 digits: shows error, focuses box 1. Else calls reCAPTCHA stub (verify_otp), stops the timer, then: login mode shows the Dashboard and a toast; reset mode shows the done panel",
+      "goes_to": "SCR-05 (login) / done state (reset)",
+      "who_may": "anyone",
+      "disabled_when": "never"
+    },
+    {
+      "control": "Resend code",
+      "kind": "Text button",
+      "outcome": "Calls reCAPTCHA stub (resend_otp), restarts the 500 s countdown, disables itself again, toast \"A new code has been sent.\" Boxes are not cleared",
+      "goes_to": "—",
+      "who_may": "anyone",
+      "disabled_when": "during the countdown"
+    },
+    {
+      "control": "← Change email (reset)",
+      "kind": "Text button (data-go=\"forgot\")",
+      "outcome": "Returns to the email form (field emptied)",
+      "goes_to": "SCR-01",
+      "who_may": "anyone",
+      "disabled_when": "never"
+    },
+    {
+      "control": "← Back to sign in (login)",
+      "kind": "Text button (data-go=\"login\")",
+      "outcome": "Returns to login. The timer keeps running in the background until the next reset",
+      "goes_to": "SCR-00",
+      "who_may": "anyone",
+      "disabled_when": "never"
+    },
+    {
+      "control": "Back to sign in (done panel)",
+      "kind": "Button",
+      "outcome": "Returns to login",
+      "goes_to": "SCR-00",
+      "who_may": "anyone",
+      "disabled_when": "never"
+    }
+  ],
+  "validation": [
+    {
+      "field": "Code (6 boxes)",
+      "rule": "Exactly 6 characters, each 0-9 (min 6, max 6)",
+      "status": "declared (regex ^[0-9]{6}$, maxlength=1, inputmode=numeric)",
+      "when": "on Verify",
+      "message": "\"Enter all 6 digits of the code.\""
+    },
+    {
+      "field": "Each box",
+      "rule": "One digit, non-digits removed on input",
+      "status": "declared",
+      "when": "on input",
+      "message": "silent"
+    },
+    {
+      "field": "Code correctness",
+      "rule": "Must equal the issued code",
+      "status": "PROPOSED",
+      "when": "on Verify",
+      "message": "\"That code is incorrect.\""
+    },
+    {
+      "field": "Code lifetime",
+      "rule": "Valid for a limited time, e.g. 10 minutes",
+      "status": "PROPOSED",
+      "when": "on Verify",
+      "message": "\"That code has expired. Request a new one.\""
+    },
+    {
+      "field": "Attempts",
+      "rule": "Maximum 5 wrong entries per code",
+      "status": "PROPOSED",
+      "when": "on Verify",
+      "message": "\"Too many attempts. Request a new code.\""
+    },
+    {
+      "field": "Resend interval",
+      "rule": "Minimum wait before resend: 500 s as built (min 500, max 500, fixed)",
+      "status": "declared in source (odd value, OQ-A-14)",
+      "when": "—",
+      "message": "countdown text"
+    },
+    {
+      "field": "Code lifetime vs resend interval vs reset-link lifetime",
+      "rule": "Three different timers (code ?, resend 500 s, link 30 min)",
+      "status": "OQ-A-14",
+      "when": "",
+      "message": ""
+    }
+  ],
+  "states": [
+    {
+      "state": "Awaiting code (reset)",
+      "when": "Arrived from SCR-01",
+      "shows": "Echo = the email typed; back link \"← Change email\"; Resend disabled with \"(500s)\" countdown"
+    },
+    {
+      "state": "Awaiting code (login)",
+      "when": "Arrived from SCR-00",
+      "shows": "Echo = typed Username, or \"your email\" if blank; back link \"← Back to sign in\""
+    },
+    {
+      "state": "Error",
+      "when": "Verify with <6 digits",
+      "shows": "\"Enter all 6 digits of the code.\" (role=alert), focus to box 1"
+    },
+    {
+      "state": "Done (reset only)",
+      "when": "Valid 6 digits",
+      "shows": "Form hidden; \"Identity verified\" panel; toast \"Identity verified. A password reset link has been sent.\""
+    },
+    {
+      "state": "Signed in (login only)",
+      "when": "Valid 6 digits",
+      "shows": "Immediately the Dashboard with toast \"Signed in successfully.\""
+    },
+    {
+      "state": "Wrong code",
+      "when": "Code incorrect",
+      "shows": "Undefined: any 6 digits are accepted, OQ-A-12"
+    },
+    {
+      "state": "Expired code",
+      "when": "Code too old",
+      "shows": "Undefined, OQ-A-13"
+    },
+    {
+      "state": "Resend available",
+      "when": "Timer reaches 0",
+      "shows": "\"Resend code\" enabled, countdown text empty"
+    }
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "ST-SCR-02-01",
+      "title": "Login mode completes sign-in",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "I pressed LOGIN on SCR-00 and I am on OTP"
+        },
+        {
+          "keyword": "When",
+          "text": "I type 123456 and press Verify"
+        },
+        {
+          "keyword": "Then",
+          "text": "the Dashboard shows and a toast reads \"Signed in successfully.\""
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-02-02",
+      "title": "Incomplete code",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "the boxes are empty"
+        },
+        {
+          "keyword": "When",
+          "text": "I press Verify"
+        },
+        {
+          "keyword": "Then",
+          "text": "\"Enter all 6 digits of the code.\" shows and focus is in box 1"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-02-03",
+      "title": "Reset mode done state",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "I came from Forgot password with user@example.com"
+        },
+        {
+          "keyword": "When",
+          "text": "I enter 6 digits and press Verify"
+        },
+        {
+          "keyword": "Then",
+          "text": "\"Identity verified\" shows with \"A password reset link has been sent to user@example.com. The link expires in 30 minutes.\""
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-02-04",
+      "title": "Paste fills the boxes",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "the boxes are empty"
+        },
+        {
+          "keyword": "When",
+          "text": "I paste \"123 456\""
+        },
+        {
+          "keyword": "Then",
+          "text": "the boxes read 1,2,3,4,5,6 and focus is on box 6"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-02-05",
+      "title": "Resend lock",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "the screen just appeared"
+        },
+        {
+          "keyword": "Then",
+          "text": "Resend code is disabled and the label reads \"(500s)\""
+        },
+        {
+          "keyword": "And",
+          "text": "pressing nothing for 500 s enables it"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-02-06",
+      "title": "Back link depends on mode",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "I arrived in reset mode"
+        },
+        {
+          "keyword": "Then",
+          "text": "the back link reads \"← Change email\" and leads to SCR-01"
+        },
+        {
+          "keyword": "And",
+          "text": "in login mode it reads \"← Back to sign in\" and leads to SCR-00"
+        }
+      ]
+    }
+  ],
+  "open_questions": [
+    "OQ-A-12",
+    "OQ-A-13",
+    "OQ-A-14",
+    "OQ-A-15",
+    "OQ-A-16",
+    "OQ-A-17"
+  ],
+  "capture": {
+    "controls": 0,
+    "dead_controls": 0,
+    "tables": 0,
+    "stat_tiles": 0,
+    "role_variants": [],
+    "forms": 0
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "generated_by": {
+    "plugin": "ux-prototype-to-screen-stories",
+    "version": "3.4.0",
+    "generator": "build_pack.py"
+  },
+  "why": "Controls that recur across screens are built once. A label on 5+ screens is shared UI; built per screen it becomes that many slightly different implementations of one thing.",
+  "distinct_labels": 121,
+  "shared_labels": 6,
+  "control_shapes": {
+    "button:button": 109,
+    "button:-": 54,
+    "a:-": 8,
+    "select:-": 7,
+    "input:search": 6,
+    "input:password": 3,
+    "input:date": 2,
+    "input:-": 1
+  },
+  "tables_captured": 7,
+  "stat_tiles_captured": 24,
+  "shared": [
+    {
+      "label": "csv",
+      "screens": 6
+    },
+    {
+      "label": "excel",
+      "screens": 6
+    },
+    {
+      "label": "print",
+      "screens": 6
+    },
+    {
+      "label": "previous",
+      "screens": 6
+    },
+    {
+      "label": "1",
+      "screens": 6
+    },
+    {
+      "label": "next",
+      "screens": 6
+    }
+  ]
+}

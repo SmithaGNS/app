@@ -11,3 +11,4 @@ open-questions.pending.csv
 # separate repos
 /backend/
 /frontend/
+/.wt/

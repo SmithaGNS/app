@@ -1,0 +1,292 @@
+{
+  "generated_by": {
+    "plugin": "ux-prototype-to-screen-stories",
+    "version": "3.4.0",
+    "generator": "build_pack.py"
+  },
+  "screen_id": "SCR-13",
+  "screen_name": "Manage Contact Us",
+  "route": "#contact (section id=contact; go('contact'))",
+  "module": "Contact",
+  "nav_label": "Manage Contact Us",
+  "priority": "must",
+  "derived": false,
+  "actors": [
+    "Signed-in portal user"
+  ],
+  "story": "screen-stories/04-contact/SCR-13-contact-us.md",
+  "screenshots": [
+    "screen-stories/screenshots/contact.png",
+    "screen-stories/screenshots/modal-reply.png"
+  ],
+  "embedded_images": [
+    "screen-stories/screenshots/contact.png",
+    "screen-stories/screenshots/contact.png",
+    "screen-stories/screenshots/modal-reply.png"
+  ],
+  "actions": [
+    {
+      "control": "Search messages…",
+      "kind": "Search input",
+      "outcome": "Live filter hiding rows whose text does not contain the query (case-insensitive, any column incl. response). Operates on the 10 loaded rows only",
+      "goes_to": "—",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-13-03)",
+      "disabled_when": "—"
+    },
+    {
+      "control": "CSV / Excel / Print",
+      "kind": "Buttons",
+      "outcome": "Wired to nothing",
+      "goes_to": "—",
+      "who_may": "—",
+      "disabled_when": "—"
+    },
+    {
+      "control": "↩ Reply to {name} (row; aria-label \"Reply to {name}\")",
+      "kind": "Icon button",
+      "outcome": "Opens reply-modal, filling a read-only block (From \"{name} <{email}>\", Message, Received) and putting the existing response, if any, in the box so a reply can be revised",
+      "goes_to": "modal reply-modal",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-13-03)",
+      "disabled_when": "— (also available on answered rows)"
+    },
+    {
+      "control": "Reply modal × / Cancel",
+      "kind": "Buttons",
+      "outcome": "Close, discarding the text",
+      "goes_to": "SCR-13",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-13-03)",
+      "disabled_when": "—"
+    },
+    {
+      "control": "Reply modal: Send reply (primary blue)",
+      "kind": "Button",
+      "outcome": "Validates Response. On failure: red ring, \"Response is required.\", focus in the box. On success: trims, stores it as the message's response, stamps Replied At with the current browser time (now()), re-renders the table, closes, toast Reply sent to {name}.. Resending overwrites the earlier response and time; no history. Nothing is actually emailed in the prototype although the placeholder says \"Type the reply the citizen will receive\"",
+      "goes_to": "SCR-13",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-13-03)",
+      "disabled_when": "Never disabled"
+    },
+    {
+      "control": "Show [10/25/50] entries",
+      "kind": "Select",
+      "outcome": "Wired to nothing",
+      "goes_to": "—",
+      "who_may": "—",
+      "disabled_when": "—"
+    },
+    {
+      "control": "Previous",
+      "kind": "Button",
+      "outcome": "Disabled; wired to nothing",
+      "goes_to": "—",
+      "who_may": "—",
+      "disabled_when": "always"
+    },
+    {
+      "control": "1",
+      "kind": "Button",
+      "outcome": "Current page marker",
+      "goes_to": "—",
+      "who_may": "—",
+      "disabled_when": "—"
+    },
+    {
+      "control": "2, 3, Next",
+      "kind": "Buttons",
+      "outcome": "Clickable-looking, wired to nothing: no further messages exist in the data",
+      "goes_to": "—",
+      "who_may": "—",
+      "disabled_when": "—"
+    },
+    {
+      "control": "Esc / backdrop click",
+      "kind": "Keyboard / pointer",
+      "outcome": "Closes modal, discards",
+      "goes_to": "SCR-13",
+      "who_may": "—",
+      "disabled_when": "—"
+    }
+  ],
+  "validation": [
+    {
+      "field": "Your response (reply-text)",
+      "rule": "Required; trimmed; min 1, max 1000 characters. Textarea has no maxlength",
+      "status": "PROPOSED",
+      "when": "blur, Send reply",
+      "message": "Response is required."
+    },
+    {
+      "field": "Your response characters",
+      "rule": "< > stripped as typed",
+      "status": "declared (global filter)",
+      "when": "input",
+      "message": "silent"
+    },
+    {
+      "field": "Search messages (search input)",
+      "rule": "Free text, min 0, max 100 characters; empty shows all rows. Shell-level rule owned by SCR-10 (OQ-10-10)",
+      "status": "PROPOSED",
+      "when": "input",
+      "message": "none"
+    },
+    {
+      "field": "Show 10 25 50 entries (page-size select)",
+      "rule": "One of 10, 25, 50; default 10; no effect today",
+      "status": "declared (select options); behaviour OQ-13-04",
+      "when": "change",
+      "message": "none"
+    }
+  ],
+  "states": [
+    {
+      "state": "Populated",
+      "when": "messages exist",
+      "shows": "10 rows on page 1; info line fixed text \"Showing 1 to 10 of 24 entries\""
+    },
+    {
+      "state": "Replied row",
+      "when": "after Send reply",
+      "shows": "Response and Replied At cells filled; row stays in place"
+    },
+    {
+      "state": "Empty",
+      "when": "no messages",
+      "shows": "Undefined — OQ-13-02"
+    },
+    {
+      "state": "Loading / Error",
+      "when": "—",
+      "shows": "none"
+    },
+    {
+      "state": "Permission denied",
+      "when": "—",
+      "shows": "Undefined — OQ-13-03"
+    },
+    {
+      "state": "Narrow viewport",
+      "when": "content area narrower than the 54 rem table min width",
+      "shows": "Not captured as a picture. Measured with Playwright: the table scrolls inside .table-wrap at viewport widths up to about 985 px and again from 1024 to about 1292 px (at 1280: 864 px of table in an 850 px wrapper); it fits only between about 985 and 1024 px and from about 1293 px up"
+    }
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "ST-SCR-13-01",
+      "title": "List loads",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "I choose Manage Contact Us"
+        },
+        {
+          "keyword": "Then",
+          "text": "the table shows 10 rows, row 1 reading \"testing · test@gmail.com · scripthsjdjend · 2026-08-21 12:01:28\""
+        },
+        {
+          "keyword": "And",
+          "text": "Response and Replied At are blank and the info line reads \"Showing 1 to 10 of 24 entries\""
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-13-02",
+      "title": "Open reply",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "I press ↩ on row 1"
+        },
+        {
+          "keyword": "Then",
+          "text": "the modal \"Reply to message\" shows From \"testing <test@gmail.com>\", Message \"scripthsjdjend\", Received \"2026-08-21 12:01:28\" and an empty response box"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-13-03",
+      "title": "Empty reply blocked",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "the reply modal is open with an empty box"
+        },
+        {
+          "keyword": "When",
+          "text": "I press Send reply"
+        },
+        {
+          "keyword": "Then",
+          "text": "\"Response is required.\" shows and the table is unchanged"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-13-04",
+      "title": "Send",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "I type \"Thank you, we are looking into it.\" and press Send reply"
+        },
+        {
+          "keyword": "Then",
+          "text": "the modal closes, row 1 Response shows that text, Replied At shows the current time, and a toast reads \"Reply sent to testing.\""
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-13-05",
+      "title": "Revise",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "row 1 has a response"
+        },
+        {
+          "keyword": "When",
+          "text": "I press ↩ on it"
+        },
+        {
+          "keyword": "Then",
+          "text": "the box contains the earlier response and sending a new text replaces it and the time"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-13-06",
+      "title": "Search",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "I type \"yicitc\" in the search box"
+        },
+        {
+          "keyword": "Then",
+          "text": "only row 10 remains visible"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-13-07",
+      "title": "Cancel",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "I typed a reply and press Cancel"
+        },
+        {
+          "keyword": "Then",
+          "text": "nothing is saved"
+        }
+      ]
+    }
+  ],
+  "open_questions": [],
+  "capture": {
+    "controls": 0,
+    "dead_controls": 0,
+    "tables": 0,
+    "stat_tiles": 0,
+    "role_variants": [],
+    "forms": 0
+  }
+}

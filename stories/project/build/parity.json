@@ -1,0 +1,75 @@
+{
+  "generated_by": {
+    "plugin": "ux-prototype-to-screen-stories",
+    "version": "3.4.0",
+    "generator": "build_pack.py"
+  },
+  "why": "The captured renders are ground truth at a known viewport. A build rendered at the same size and role can be diffed against them, which turns 'looks right' into a number.",
+  "viewports": {
+    "desktop": [
+      1440,
+      900
+    ],
+    "mobile": [
+      390,
+      844
+    ]
+  },
+  "count": 9,
+  "renders": [
+    {
+      "route": "dashboard",
+      "role": null,
+      "viewport": "desktop",
+      "reference": "screen-stories/screenshots/dashboard.png"
+    },
+    {
+      "route": "violations",
+      "role": null,
+      "viewport": "desktop",
+      "reference": "screen-stories/screenshots/violations.png"
+    },
+    {
+      "route": "category",
+      "role": null,
+      "viewport": "desktop",
+      "reference": "screen-stories/screenshots/category.png"
+    },
+    {
+      "route": "owners",
+      "role": null,
+      "viewport": "desktop",
+      "reference": "screen-stories/screenshots/owners.png"
+    },
+    {
+      "route": "config",
+      "role": null,
+      "viewport": "desktop",
+      "reference": "screen-stories/screenshots/config.png"
+    },
+    {
+      "route": "contact",
+      "role": null,
+      "viewport": "desktop",
+      "reference": "screen-stories/screenshots/contact.png"
+    },
+    {
+      "route": "users",
+      "role": null,
+      "viewport": "desktop",
+      "reference": "screen-stories/screenshots/users.png"
+    },
+    {
+      "route": "appusers",
+      "role": null,
+      "viewport": "desktop",
+      "reference": "screen-stories/screenshots/appusers.png"
+    },
+    {
+      "route": "profile",
+      "role": null,
+      "viewport": "desktop",
+      "reference": "screen-stories/screenshots/profile.png"
+    }
+  ]
+}

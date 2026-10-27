@@ -1,0 +1,744 @@
+{
+  "generated_by": {
+    "plugin": "ux-prototype-to-screen-stories",
+    "version": "3.4.0",
+    "generator": "build_pack.py"
+  },
+  "screen_id": "SCR-20",
+  "screen_name": "Admin user list (with Add/Edit User dialog)",
+  "route": "#users",
+  "module": "Users",
+  "nav_label": "Admin user List",
+  "priority": "must",
+  "derived": false,
+  "actors": [
+    "any signed-in portal user"
+  ],
+  "story": "screen-stories/05-users/SCR-20-admin-user-list.md",
+  "screenshots": [
+    "screen-stories/screenshots/users.png",
+    "screen-stories/screenshots/users--fold.png",
+    "screen-stories/screenshots/modal-user-add.png",
+    "screen-stories/screenshots/modal-user-add-invalid.png",
+    "screen-stories/screenshots/modal-user-edit.png"
+  ],
+  "embedded_images": [
+    "screen-stories/screenshots/users.png",
+    "screen-stories/screenshots/users.png",
+    "screen-stories/screenshots/modal-user-add.png",
+    "screen-stories/screenshots/modal-user-add-invalid.png",
+    "screen-stories/screenshots/modal-user-edit.png"
+  ],
+  "actions": [
+    {
+      "control": "Search users",
+      "kind": "Search input (data-filter=\"users-body\")",
+      "outcome": "Client-side, as you type and on the native clear (✕): lower-cases the query and hides every row whose whole text (all columns incl. S No, Role, Level) does not contain it as a substring; shows rows that do. Only the 8 rows in memory are searched. Does not touch the footer count",
+      "goes_to": "—",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-20-02)",
+      "disabled_when": "—"
+    },
+    {
+      "control": "CSV",
+      "kind": "Button",
+      "outcome": "Wired to nothing (no listener, no data attribute). Clicking does nothing visible",
+      "goes_to": "—",
+      "who_may": "—",
+      "disabled_when": "never"
+    },
+    {
+      "control": "Excel",
+      "kind": "Button",
+      "outcome": "Wired to nothing",
+      "goes_to": "—",
+      "who_may": "—",
+      "disabled_when": "never"
+    },
+    {
+      "control": "Print",
+      "kind": "Button",
+      "outcome": "Wired to nothing",
+      "goes_to": "—",
+      "who_may": "—",
+      "disabled_when": "never"
+    },
+    {
+      "control": "＋ Add User",
+      "kind": "Button (primary, green) data-action=\"user-add\"",
+      "outcome": "Shows the Add User dialog with every field blank, Role preset Administrator, Password required, Save disabled; focus moves to the dialog's × button",
+      "goes_to": "dialog user-modal",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only PROPOSED, OQ-20-02)",
+      "disabled_when": "never"
+    },
+    {
+      "control": "✎ (row) aria-label \"Edit {firstName}\"",
+      "kind": "Icon button data-user-edit",
+      "outcome": "Shows the Edit User dialog filled from that row; Password optional",
+      "goes_to": "dialog user-modal",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only PROPOSED, OQ-20-02)",
+      "disabled_when": "never"
+    },
+    {
+      "control": "🗑 (row) aria-label \"Delete {firstName}\"",
+      "kind": "Icon button data-user-del (hover turns red)",
+      "outcome": "Raises the native confirm Delete user {first} {last}?. OK removes that user from the list immediately and re-renders (S No renumbers, footer updates); no toast. Cancel does nothing. No protection against deleting yourself, the last Administrator, or a seed row",
+      "goes_to": "—",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only PROPOSED, OQ-20-02)",
+      "disabled_when": "never"
+    },
+    {
+      "control": "🔒 (row) aria-label \"Reset password for {firstName}\"",
+      "kind": "Icon button data-user-lock",
+      "outcome": "Shows the toast \"Password reset link sent (concept).\" and does nothing else: no email, no flag on the row, no confirmation, and the toast does not name the user",
+      "goes_to": "—",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only PROPOSED, OQ-20-02)",
+      "disabled_when": "never"
+    },
+    {
+      "control": "Show [10 ▾] entries",
+      "kind": "Select, options 10, 25",
+      "outcome": "Wired to nothing: changing it does not alter the table (all 8 rows always show)",
+      "goes_to": "—",
+      "who_may": "—",
+      "disabled_when": "never"
+    },
+    {
+      "control": "Previous",
+      "kind": "Pagination button",
+      "outcome": "Rendered disabled",
+      "goes_to": "—",
+      "who_may": "—",
+      "disabled_when": "always (page 1)"
+    },
+    {
+      "control": "1",
+      "kind": "Pagination button",
+      "outcome": "Marks current page (aria-current=\"page\", blue); no handler",
+      "goes_to": "—",
+      "who_may": "—",
+      "disabled_when": "—"
+    },
+    {
+      "control": "Next",
+      "kind": "Pagination button",
+      "outcome": "Rendered disabled",
+      "goes_to": "—",
+      "who_may": "—",
+      "disabled_when": "always (single page)"
+    },
+    {
+      "control": "× (dialog) aria-label \"Close dialog\"",
+      "kind": "Icon button",
+      "outcome": "Closes the dialog and discards everything typed, no confirmation",
+      "goes_to": "—",
+      "who_may": "—",
+      "disabled_when": "never"
+    },
+    {
+      "control": "Cancel (dialog)",
+      "kind": "Button (grey)",
+      "outcome": "Same as ×: closes, discards",
+      "goes_to": "—",
+      "who_may": "—",
+      "disabled_when": "never"
+    },
+    {
+      "control": "Save (dialog)",
+      "kind": "Button (green) data-action=\"save-user\"",
+      "outcome": "Validates all marked fields; if the Password is filled and fails the policy, shows \"Password does not meet all the requirements.\" under it and focuses it; otherwise builds the user from the trimmed values, appends it (Add) or replaces that row (Edit), re-renders the table, closes the dialog, and shows the toast User \"{first} {last}\" added successfully. or … updated successfully. The Password value is not stored anywhere (the user object has no password field)",
+      "goes_to": "back to this list",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only PROPOSED, OQ-20-02)",
+      "disabled_when": "form invalid (see Validation); recomputed on every keystroke"
+    },
+    {
+      "control": "👁 / 🙈 (Password) aria-label \"Show password\" / \"Hide password\"",
+      "kind": "Toggle button data-pw-toggle=\"u-pass\"",
+      "outcome": "Switches the password input between masked and plain text and flips aria-pressed. The state is not reset when the dialog is reopened (a password left revealed stays revealed)",
+      "goes_to": "—",
+      "who_may": "any",
+      "disabled_when": "never"
+    },
+    {
+      "control": "Backdrop click",
+      "kind": "Gesture",
+      "outcome": "mousedown on the dim area closes the dialog and discards input",
+      "goes_to": "—",
+      "who_may": "—",
+      "disabled_when": "—"
+    },
+    {
+      "control": "Esc",
+      "kind": "Key",
+      "outcome": "Closes the dialog (or the account menu, or the sidebar, in that priority)",
+      "goes_to": "—",
+      "who_may": "—",
+      "disabled_when": "—"
+    },
+    {
+      "control": "Edit Ronald",
+      "kind": "1",
+      "outcome": "Shows the Edit User dialog for row 1 (same as ✎ above)",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "Delete Ronald",
+      "kind": "1",
+      "outcome": "Native confirm, then removes row 1 (same as 🗑 above)",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "Reset password for Ronald",
+      "kind": "1",
+      "outcome": "Toast \"Password reset link sent (concept).\" (same as 🔒 above)",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "Edit HANIF",
+      "kind": "2",
+      "outcome": "Shows the Edit User dialog for row 2 (same as ✎ above)",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "Delete HANIF",
+      "kind": "2",
+      "outcome": "Native confirm, then removes row 2 (same as 🗑 above)",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "Reset password for HANIF",
+      "kind": "2",
+      "outcome": "Toast \"Password reset link sent (concept).\" (same as 🔒 above)",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "Edit Shannay",
+      "kind": "3",
+      "outcome": "Shows the Edit User dialog for row 3 (same as ✎ above)",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "Delete Shannay",
+      "kind": "3",
+      "outcome": "Native confirm, then removes row 3 (same as 🗑 above)",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "Reset password for Shannay",
+      "kind": "3",
+      "outcome": "Toast \"Password reset link sent (concept).\" (same as 🔒 above)",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "Edit Level2",
+      "kind": "4",
+      "outcome": "Shows the Edit User dialog for row 4 (same as ✎ above)",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "Delete Level2",
+      "kind": "4",
+      "outcome": "Native confirm, then removes row 4 (same as 🗑 above)",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "Reset password for Level2",
+      "kind": "4",
+      "outcome": "Toast \"Password reset link sent (concept).\" (same as 🔒 above)",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "Edit Level1",
+      "kind": "5",
+      "outcome": "Shows the Edit User dialog for row 5 (same as ✎ above)",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "Delete Level1",
+      "kind": "5",
+      "outcome": "Native confirm, then removes row 5 (same as 🗑 above)",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "Reset password for Level1",
+      "kind": "5",
+      "outcome": "Toast \"Password reset link sent (concept).\" (same as 🔒 above)",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "Edit Vernon",
+      "kind": "6",
+      "outcome": "Shows the Edit User dialog for row 6 (same as ✎ above)",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "Delete Vernon",
+      "kind": "6",
+      "outcome": "Native confirm, then removes row 6 (same as 🗑 above)",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "Reset password for Vernon",
+      "kind": "6",
+      "outcome": "Toast \"Password reset link sent (concept).\" (same as 🔒 above)",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "Edit Sharlene",
+      "kind": "7",
+      "outcome": "Shows the Edit User dialog for row 7 (same as ✎ above)",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "Delete Sharlene",
+      "kind": "7",
+      "outcome": "Native confirm, then removes row 7 (same as 🗑 above)",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "Reset password for Sharlene",
+      "kind": "7",
+      "outcome": "Toast \"Password reset link sent (concept).\" (same as 🔒 above)",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "Edit Petra-Kene",
+      "kind": "8",
+      "outcome": "Shows the Edit User dialog for row 8 (same as ✎ above)",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "Delete Petra-Kene",
+      "kind": "8",
+      "outcome": "Native confirm, then removes row 8 (same as 🗑 above)",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "Reset password for Petra-Kene",
+      "kind": "8",
+      "outcome": "Toast \"Password reset link sent (concept).\" (same as 🔒 above)",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "CSV, Excel, Print",
+      "kind": "Unbuilt scope signalled by the prototype (same trio appears on every list). Recommend: decide whether exports of portal-user PII are wanted at all",
+      "outcome": "OQ-20-03",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "Show entries select",
+      "kind": "Unbuilt; with 8 rows it is invisible, with real data it is the paging control",
+      "outcome": "OQ-20-04",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "Previous / 1 / Next",
+      "kind": "Static decoration; correct for one page, unbuilt otherwise",
+      "outcome": "OQ-20-04",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    }
+  ],
+  "validation": [
+    {
+      "field": "Search users",
+      "rule": "Free text; substring match; empty shows all rows; max 100 characters (same PROPOSED list-search limit as SCR-06/10/11/13; see OQ-20-12)",
+      "status": "PROPOSED",
+      "when": "on input",
+      "message": "—"
+    },
+    {
+      "field": "Show 10 25 entries",
+      "rule": "Closed set: 10 or 25, default 10; currently wired to nothing",
+      "status": "declared (select options)",
+      "when": "on change",
+      "message": "—"
+    },
+    {
+      "field": "First Name",
+      "rule": "Required (trimmed; whitespace-only is empty). Max 60 characters after trim; Unicode letters, space, hyphen, apostrophe (O'Brien, Müller, Petra-Kene must pass)",
+      "status": "PROPOSED",
+      "when": "blur; Save",
+      "message": "\"First Name is required.\" / PROPOSED \"First Name must be 60 characters or fewer.\""
+    },
+    {
+      "field": "Last Name",
+      "rule": "Required (trimmed). Max 60, same character set",
+      "status": "PROPOSED",
+      "when": "blur; Save",
+      "message": "\"Last Name is required.\" / PROPOSED \"Last Name must be 60 characters or fewer.\""
+    },
+    {
+      "field": "Email",
+      "rule": "Required (trimmed); must match ^\\S+@\\S+\\.\\S+$ (type=\"email\" plus regex in fieldError). Max 254 characters, stored lower-cased; unique among portal users, case-insensitive (server-side only)",
+      "status": "PROPOSED",
+      "when": "blur; Save (uniqueness on save)",
+      "message": "\"Email is required.\" / \"Please enter a valid email address.\" / PROPOSED \"Email must be 254 characters or fewer.\" / PROPOSED \"A user with this email already exists.\" (OQ-20-05)"
+    },
+    {
+      "field": "Phone No",
+      "rule": "Required (trimmed); digits only ^[0-9]+$ (no +, spaces, hyphens; inputmode=\"numeric\"). Min 7, max 15 digits (E.164 maximum; shortest seed here is 9)",
+      "status": "PROPOSED",
+      "when": "blur; Save",
+      "message": "\"Phone No is required.\" / \"Phone No must be digits only.\" / PROPOSED \"Phone No must be 7 to 15 digits.\""
+    },
+    {
+      "field": "Address",
+      "rule": "Optional free text, trimmed; max 200 characters",
+      "status": "PROPOSED",
+      "when": "blur",
+      "message": "PROPOSED \"Address must be 200 characters or fewer.\""
+    },
+    {
+      "field": "Role",
+      "rule": "Required; exactly one of Administrator, Violation manager; placeholder \"Select role\" is not a valid value",
+      "status": "declared (select + data-req)",
+      "when": "blur; Save",
+      "message": "\"Role is required.\""
+    },
+    {
+      "field": "Level",
+      "rule": "Optional; one of blank, 1, 2, 3 (the label carries a yellow \"1–3\" chip: the prototype itself marks this as PROPOSED/concept)",
+      "status": "PROPOSED",
+      "when": "—",
+      "message": "—"
+    },
+    {
+      "field": "Password",
+      "rule": "Required on Add (data-req added in openUser(-1); blur skipped for this field; \"Password is required.\" is effectively never seen because Save is disabled while empty); optional on Edit (blank keeps the current password, hint text). When filled: min 12 and max 128 characters (UTF-16 units; \"Maximum 128 characters.\" shown red when exceeded); at least one uppercase A–Z, one lowercase a–z, one digit, and one symbol from ! @ # $ % ^ & * ( ) _ + - = [ ] { } \\| ; ' : \" , . < > ? (all ASCII-only; space, backtick, tilde, slash, backslash do not count; the UI shows only \"(!@#$…)\" so the permitted set is invisible). All five met and not over 128 enables Save; otherwise \"Password does not meet all the requirements.\" Not equal to name/email, not on a breached list, not equal to the last N passwords",
+      "status": "PROPOSED",
+      "when": "live on every keystroke; Save",
+      "message": "rows \"At least 12 characters\", \"An uppercase letter (A–Z)\", \"A lowercase letter (a–z)\", \"A number (0–9)\", \"A special character (!@#$…)\"; \"Maximum 128 characters.\"; \"Password does not meet all the requirements.\""
+    },
+    {
+      "field": "Level",
+      "rule": "Meaning (what does Level 1/2/3 permit, does it gate violation review severity 0–3 on the Violations screen)",
+      "status": "OQ-20-02",
+      "when": "",
+      "message": ""
+    },
+    {
+      "field": "Phone No",
+      "rule": "No country-code rule although seeds mix local and full international numbers (123456789 vs 18763831676)",
+      "status": "OQ-20-05",
+      "when": "",
+      "message": ""
+    }
+  ],
+  "states": [
+    {
+      "state": "Populated",
+      "when": "1–n users",
+      "shows": "Table as above; footer Showing 1 to {n} of {n} entries"
+    },
+    {
+      "state": "Search no match",
+      "when": "text typed that matches no row text",
+      "shows": "Every row hidden, header row stays, no \"No results\" message and the footer text is not updated (still \"Showing 1 to 8 of 8 entries\"). Undefined — OQ-20-06"
+    },
+    {
+      "state": "Empty",
+      "when": "every user deleted",
+      "shows": "Empty tbody, footer reads Showing 1 to 0 of 0 entries (literal template text), no empty-state message. Undefined — OQ-20-06"
+    },
+    {
+      "state": "Loading",
+      "when": "n/a",
+      "shows": "Data is an in-memory array; no loading state exists. Undefined — OQ-20-07"
+    },
+    {
+      "state": "Error",
+      "when": "n/a",
+      "shows": "No load or save failure path exists; every save succeeds. Undefined — OQ-20-07"
+    },
+    {
+      "state": "Permission denied",
+      "when": "n/a",
+      "shows": "The role of the signed-in user is never checked; \"Violation manager\" accounts would see this screen identically. Undefined — OQ-20-02"
+    },
+    {
+      "state": "users--fold.png",
+      "when": "a crop of the same render as users.png, embedded above; adds no state",
+      "shows": ""
+    }
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "ST-SCR-20-01",
+      "title": "List renders the eight seed users",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "I am signed in and open Admin user List"
+        },
+        {
+          "keyword": "When",
+          "text": "the page loads"
+        },
+        {
+          "keyword": "Then",
+          "text": "the table lists 8 rows with S No 1 to 8, the first row reads Ronald / Stephen / ronaldstephen@myambergroup.com / 123456789 / Bangalore / Administrator"
+        },
+        {
+          "keyword": "And",
+          "text": "the footer reads \"Showing 1 to 8 of 8 entries\" and Previous and Next are disabled"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-20-02",
+      "title": "Search filters rows as I type",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "the list shows 8 rows"
+        },
+        {
+          "keyword": "When",
+          "text": "I type \"level\" into Search users"
+        },
+        {
+          "keyword": "Then",
+          "text": "only the Level2 Admin and Level1 Admin rows remain visible"
+        },
+        {
+          "keyword": "And",
+          "text": "clearing the box with the ✕ shows all 8 rows again"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-20-03",
+      "title": "Add dialog starts invalid",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "I press ＋ Add User"
+        },
+        {
+          "keyword": "When",
+          "text": "the dialog appears"
+        },
+        {
+          "keyword": "Then",
+          "text": "the title is \"Add User\", Role reads Administrator, all other fields are empty and Save is disabled"
+        },
+        {
+          "keyword": "And",
+          "text": "the five password rules are unticked and the meter is grey"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-20-04",
+      "title": "Password checklist turns green rule by rule",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "the Add User dialog is open"
+        },
+        {
+          "keyword": "When",
+          "text": "I type the password \"Abcdefghijk1!\" in the Password field"
+        },
+        {
+          "keyword": "Then",
+          "text": "all five rules are ticked green, the label reads \"Strong\", and (once the other required fields are valid) Save becomes enabled"
+        },
+        {
+          "keyword": "And",
+          "text": "typing \"abcdefghijkl\" instead leaves Save disabled with only \"At least 12 characters\" and \"A lowercase letter (a–z)\" ticked"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-20-05",
+      "title": "Add a user",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "the Add User dialog holds First \"Test\", Last \"User\", Email \"test.user@ta.org.jm\", Phone \"8761234567\", Role Violation manager, Level 2 and a policy-compliant password"
+        },
+        {
+          "keyword": "When",
+          "text": "I press Save"
+        },
+        {
+          "keyword": "Then",
+          "text": "the dialog closes, a 9th row \"Test User\" appears, the footer reads \"Showing 1 to 9 of 9 entries\""
+        },
+        {
+          "keyword": "And",
+          "text": "a toast reads User \"Test User\" added successfully."
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-20-06",
+      "title": "Field errors appear on blur",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "the Add User dialog is open"
+        },
+        {
+          "keyword": "When",
+          "text": "I focus Email, type \"abc\" and tab away"
+        },
+        {
+          "keyword": "Then",
+          "text": "\"Please enter a valid email address.\" shows under Email with a red ring"
+        },
+        {
+          "keyword": "And",
+          "text": "typing in the field removes that message immediately"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-20-07",
+      "title": "Edit keeps the password when left blank",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "I press ✎ on the Ronald row"
+        },
+        {
+          "keyword": "When",
+          "text": "the dialog opens"
+        },
+        {
+          "keyword": "Then",
+          "text": "the title is \"Edit User\", fields hold Ronald's values, the Password asterisk is hidden and the hint reads \"Leave blank to keep the current password.\""
+        },
+        {
+          "keyword": "And",
+          "text": "changing Address to \"Kingston\" and pressing Save updates that row and shows User \"Ronald Stephen\" updated successfully."
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-20-08",
+      "title": "Delete asks the browser to confirm",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "the list shows 8 rows"
+        },
+        {
+          "keyword": "When",
+          "text": "I press 🗑 on Vernon and accept the browser prompt \"Delete user Vernon Walters?\""
+        },
+        {
+          "keyword": "Then",
+          "text": "the row disappears, the remaining rows renumber 1 to 7 and the footer reads \"Showing 1 to 7 of 7 entries\""
+        },
+        {
+          "keyword": "And",
+          "text": "dismissing the prompt instead leaves all 8 rows"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-20-09",
+      "title": "Reset password is a toast only",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "the list is shown"
+        },
+        {
+          "keyword": "When",
+          "text": "I press 🔒 on any row"
+        },
+        {
+          "keyword": "Then",
+          "text": "a toast reads \"Password reset link sent (concept).\""
+        },
+        {
+          "keyword": "And",
+          "text": "no row data changes"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-20-10",
+      "title": "Escape and backdrop discard the dialog",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "the Edit User dialog has an unsaved change"
+        },
+        {
+          "keyword": "When",
+          "text": "I press Esc"
+        },
+        {
+          "keyword": "Then",
+          "text": "the dialog closes and reopening the same row shows the original values"
+        }
+      ]
+    }
+  ],
+  "open_questions": [],
+  "capture": {
+    "controls": 33,
+    "dead_controls": 6,
+    "tables": 1,
+    "stat_tiles": 0,
+    "role_variants": [],
+    "forms": 0
+  }
+}

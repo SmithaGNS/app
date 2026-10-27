@@ -1,0 +1,255 @@
+{
+  "generated_by": {
+    "plugin": "ux-prototype-to-screen-stories",
+    "version": "3.4.0",
+    "generator": "build_pack.py"
+  },
+  "screen_id": "SCR-04",
+  "screen_name": "Account menu and logout confirmation",
+  "route": "shell header #user-menu + modal #logout-modal (shown here over #owners)",
+  "module": "Auth",
+  "nav_label": "Admin Admin (header avatar)",
+  "priority": "must",
+  "derived": false,
+  "actors": [
+    "Administrator",
+    "Violation manager"
+  ],
+  "story": "screen-stories/01-auth/SCR-04-account-menu-logout.md",
+  "screenshots": [
+    "screen-stories/screenshots/menu-account.png",
+    "screen-stories/screenshots/modal-logout.png"
+  ],
+  "embedded_images": [
+    "screen-stories/screenshots/menu-account.png",
+    "screen-stories/screenshots/menu-account.png",
+    "screen-stories/screenshots/modal-logout.png",
+    "screen-stories/screenshots/shell-mobile-390-closed.png",
+    "screen-stories/screenshots/shell-mobile-390-drawer.png"
+  ],
+  "actions": [
+    {
+      "control": "AA Admin Admin ▾ (aria-haspopup, aria-expanded)",
+      "kind": "Header button",
+      "outcome": "Toggles the dropdown; aria-expanded flips",
+      "goes_to": "menu",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-A-27)",
+      "disabled_when": "never"
+    },
+    {
+      "control": "Profile",
+      "kind": "Menu item",
+      "outcome": "Closes the menu, shows the Profile screen and resets its password form",
+      "goes_to": "SCR-22 Profile",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-A-27)",
+      "disabled_when": "never"
+    },
+    {
+      "control": "Logout",
+      "kind": "Menu item (red)",
+      "outcome": "Closes the menu and shows the confirmation dialog; nothing ends yet",
+      "goes_to": "dialog",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-A-27)",
+      "disabled_when": "never"
+    },
+    {
+      "control": "Cancel",
+      "kind": "Dialog button",
+      "outcome": "Hides the dialog and stays signed in. Focus is lost: the dialog recorded the (now hidden) Logout menu item as the element to refocus, see OQ-A-21",
+      "goes_to": "previous screen",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-A-27)",
+      "disabled_when": "never"
+    },
+    {
+      "control": "Sign out",
+      "kind": "Dialog button (red, destructive)",
+      "outcome": "Switches to the login screen and hides the shell. In the prototype nothing else happens: no session is cleared, typed login fields keep their text, SCR-02 state is unchanged",
+      "goes_to": "SCR-00",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-A-27)",
+      "disabled_when": "never"
+    },
+    {
+      "control": "Click outside / Escape",
+      "kind": "Dismissal of the menu",
+      "outcome": "Closes the menu only",
+      "goes_to": "—",
+      "who_may": "—",
+      "disabled_when": "—"
+    },
+    {
+      "control": "Escape / backdrop mouse-down (dialog)",
+      "kind": "Dismissal",
+      "outcome": "Closes the dialog without signing out",
+      "goes_to": "—",
+      "who_may": "—",
+      "disabled_when": "—"
+    }
+  ],
+  "validation": [
+    {
+      "field": "(none)",
+      "rule": "No input fields on the menu or dialog",
+      "status": "n/a",
+      "when": "n/a",
+      "message": "n/a"
+    },
+    {
+      "field": "Session (not a field)",
+      "rule": "Idle timeout of 30 minutes ends the session and returns to SCR-00",
+      "status": "PROPOSED",
+      "when": "on inactivity",
+      "message": "\"Your session has expired. Please sign in again.\""
+    }
+  ],
+  "states": [
+    {
+      "state": "Menu closed",
+      "when": "Default",
+      "shows": "Header shows avatar \"AA\", name \"Admin Admin\" (name hidden below 640px), caret ▾"
+    },
+    {
+      "state": "Menu open",
+      "when": "Press the header button",
+      "shows": "208 px card: \"Signed in as Admin Admin\", Profile, Logout (red)"
+    },
+    {
+      "state": "Confirm",
+      "when": "Press Logout",
+      "shows": "Menu closes; modal over dimmed page"
+    },
+    {
+      "state": "Signed out",
+      "when": "Press Sign out",
+      "shows": "SCR-00; shell hidden"
+    }
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "ST-SCR-04-01",
+      "title": "Menu contents",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "I am signed in"
+        },
+        {
+          "keyword": "When",
+          "text": "I press the header button \"Admin Admin\""
+        },
+        {
+          "keyword": "Then",
+          "text": "a menu shows \"Signed in as Admin Admin\", Profile and Logout"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-04-02",
+      "title": "Outside click closes",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "the menu is open"
+        },
+        {
+          "keyword": "When",
+          "text": "I click elsewhere on the page"
+        },
+        {
+          "keyword": "Then",
+          "text": "the menu closes"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-04-03",
+      "title": "Logout asks first",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "the menu is open"
+        },
+        {
+          "keyword": "When",
+          "text": "I press Logout"
+        },
+        {
+          "keyword": "Then",
+          "text": "the dialog \"Are you sure you want to sign out?\" shows and the menu is closed"
+        },
+        {
+          "keyword": "And",
+          "text": "I am still signed in"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-04-04",
+      "title": "Cancel",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "the dialog shows"
+        },
+        {
+          "keyword": "When",
+          "text": "I press Cancel"
+        },
+        {
+          "keyword": "Then",
+          "text": "it closes and the page I was on is unchanged"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-04-05",
+      "title": "Sign out",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "the dialog shows"
+        },
+        {
+          "keyword": "When",
+          "text": "I press Sign out"
+        },
+        {
+          "keyword": "Then",
+          "text": "the Welcome back login screen shows and the sidebar and header are hidden"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-04-06",
+      "title": "Escape",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "the dialog shows"
+        },
+        {
+          "keyword": "When",
+          "text": "I press Escape"
+        },
+        {
+          "keyword": "Then",
+          "text": "the dialog closes and I stay signed in"
+        }
+      ]
+    }
+  ],
+  "open_questions": [
+    "OQ-A-23",
+    "OQ-A-24",
+    "OQ-A-25",
+    "OQ-A-26",
+    "OQ-A-27"
+  ],
+  "capture": {
+    "controls": 0,
+    "dead_controls": 0,
+    "tables": 0,
+    "stat_tiles": 0,
+    "role_variants": [],
+    "forms": 0
+  }
+}

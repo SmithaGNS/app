@@ -1,0 +1,330 @@
+{
+  "generated_by": {
+    "plugin": "ux-prototype-to-screen-stories",
+    "version": "3.4.0",
+    "generator": "build_pack.py"
+  },
+  "screen_id": "SCR-03",
+  "screen_name": "Feedback modal",
+  "route": "#login + modal #feedback-modal (action feedback-open)",
+  "module": "Auth",
+  "nav_label": "none (pre-authentication modal)",
+  "priority": "should",
+  "derived": true,
+  "actors": [
+    "Anonymous visitor (pre-login)"
+  ],
+  "story": "screen-stories/01-auth/SCR-03-feedback-modal.md",
+  "screenshots": [
+    "screen-stories/screenshots/modal-feedback.png"
+  ],
+  "embedded_images": [
+    "screen-stories/screenshots/modal-feedback.png",
+    "screen-stories/screenshots/modal-feedback.png"
+  ],
+  "actions": [
+    {
+      "control": "×",
+      "kind": "Icon button, \"Close dialog\"",
+      "outcome": "Hides the modal and discards typed text; focus returns to the Feedback link",
+      "goes_to": "SCR-00",
+      "who_may": "anyone (pre-login)",
+      "disabled_when": "never"
+    },
+    {
+      "control": "Name",
+      "kind": "Text input",
+      "outcome": "Free text",
+      "goes_to": "—",
+      "who_may": "anyone (pre-login)",
+      "disabled_when": "—"
+    },
+    {
+      "control": "Email",
+      "kind": "Email input",
+      "outcome": "Placeholder name@example.com",
+      "goes_to": "—",
+      "who_may": "anyone (pre-login)",
+      "disabled_when": "—"
+    },
+    {
+      "control": "Subject",
+      "kind": "Select",
+      "outcome": "Choose one of 4 subjects",
+      "goes_to": "—",
+      "who_may": "anyone (pre-login)",
+      "disabled_when": "—"
+    },
+    {
+      "control": "Message",
+      "kind": "Textarea",
+      "outcome": "Free text, 1000 max",
+      "goes_to": "—",
+      "who_may": "anyone (pre-login)",
+      "disabled_when": "—"
+    },
+    {
+      "control": "Cancel",
+      "kind": "Button (grey)",
+      "outcome": "Hides the modal, discards input",
+      "goes_to": "SCR-00",
+      "who_may": "anyone (pre-login)",
+      "disabled_when": "never"
+    },
+    {
+      "control": "Send feedback",
+      "kind": "Primary button",
+      "outcome": "Validates; on success hides form and footer, shows the sent panel and a toast. Nothing is transmitted or saved",
+      "goes_to": "sent state",
+      "who_may": "anyone (pre-login)",
+      "disabled_when": "never (validates on press; unlike Save buttons elsewhere it is not disabled while empty)"
+    },
+    {
+      "control": "Escape key",
+      "kind": "Keyboard",
+      "outcome": "Closes any open modal",
+      "goes_to": "SCR-00",
+      "who_may": "anyone (pre-login)",
+      "disabled_when": "—"
+    },
+    {
+      "control": "Backdrop",
+      "kind": "Mouse-down on dark area",
+      "outcome": "Closes the modal, input discarded, no confirmation",
+      "goes_to": "SCR-00",
+      "who_may": "anyone (pre-login)",
+      "disabled_when": "—"
+    }
+  ],
+  "validation": [
+    {
+      "field": "Name",
+      "rule": "Required, trimmed",
+      "status": "declared (data-req)",
+      "when": "blur, submit",
+      "message": "\"Name is required.\""
+    },
+    {
+      "field": "Name",
+      "rule": "Length 2-100 characters, any letters including accents and apostrophes",
+      "status": "PROPOSED",
+      "when": "blur, submit",
+      "message": "\"Name must be 2 to 100 characters.\""
+    },
+    {
+      "field": "Email",
+      "rule": "Required",
+      "status": "declared",
+      "when": "blur, submit",
+      "message": "\"Email is required.\""
+    },
+    {
+      "field": "Email",
+      "rule": "Shape ^\\S+@\\S+\\.\\S+$",
+      "status": "declared (type=email + regex)",
+      "when": "blur, submit",
+      "message": "\"Please enter a valid email address.\""
+    },
+    {
+      "field": "Email",
+      "rule": "Length 5-254",
+      "status": "PROPOSED",
+      "when": "blur, submit",
+      "message": "\"Please enter a valid email address.\""
+    },
+    {
+      "field": "Subject",
+      "rule": "One of: General feedback, Report a problem, Feature request, Account / login issue; default General feedback",
+      "status": "declared (select)",
+      "when": "—",
+      "message": "—"
+    },
+    {
+      "field": "Message",
+      "rule": "Required, trimmed",
+      "status": "declared",
+      "when": "blur, submit",
+      "message": "\"Message is required.\""
+    },
+    {
+      "field": "Message",
+      "rule": "Max 1000 characters",
+      "status": "declared (maxlength=1000)",
+      "when": "on input (browser stops typing)",
+      "message": "silent"
+    },
+    {
+      "field": "Message",
+      "rule": "Minimum 10 characters",
+      "status": "PROPOSED",
+      "when": "blur, submit",
+      "message": "\"Message must be at least 10 characters.\""
+    },
+    {
+      "field": "All text",
+      "rule": "< > stripped as typed",
+      "status": "declared (global filter)",
+      "when": "input",
+      "message": "silent"
+    },
+    {
+      "field": "Subject",
+      "rule": "Where each subject is routed",
+      "status": "OQ-A-20",
+      "when": "",
+      "message": ""
+    }
+  ],
+  "states": [
+    {
+      "state": "Form",
+      "when": "Each time it opens (Name, Email and Message cleared, errors cleared; Subject is not reset: it keeps the last choice, see defect OQ-A-28)",
+      "shows": "Title \"Feedback\", intro \"Share a question, issue, or suggestion. Fields marked * are required.\""
+    },
+    {
+      "state": "Validation error",
+      "when": "Send feedback with a rule failing",
+      "shows": "Red message under each failing field, red outline, focus to the first failing field; modal stays"
+    },
+    {
+      "state": "Sent",
+      "when": "All rules pass",
+      "shows": "Form and footer hidden; green tick, \"Thanks for your feedback!\", \"We've received your message and will get back to you if a reply is needed.\"; toast \"Feedback sent. Thank you!\""
+    },
+    {
+      "state": "Loading / failure",
+      "when": "Send in flight or failing",
+      "shows": "Undefined, OQ-A-02"
+    }
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "ST-SCR-03-01",
+      "title": "Opens clean",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "I typed in a previous session of this modal and closed it"
+        },
+        {
+          "keyword": "When",
+          "text": "I press Feedback on the login page"
+        },
+        {
+          "keyword": "Then",
+          "text": "Name, Email and Message are empty"
+        },
+        {
+          "keyword": "And",
+          "text": "Subject still shows the option I last chose (as built; the code openFeedback() looks for an element id feedback-subject that does not exist, the select is fb-subject; the intended behaviour, reset to \"General feedback\", is OQ-A-28)"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-03-02",
+      "title": "Required fields",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "the form is empty"
+        },
+        {
+          "keyword": "When",
+          "text": "I press Send feedback"
+        },
+        {
+          "keyword": "Then",
+          "text": "\"Name is required.\", \"Email is required.\" and \"Message is required.\" show and focus is in Name"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-03-03",
+      "title": "Bad email",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "Email holds \"abc\""
+        },
+        {
+          "keyword": "When",
+          "text": "I leave the field"
+        },
+        {
+          "keyword": "Then",
+          "text": "\"Please enter a valid email address.\" shows"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-03-04",
+      "title": "Successful send",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "all three required fields are valid"
+        },
+        {
+          "keyword": "When",
+          "text": "I press Send feedback"
+        },
+        {
+          "keyword": "Then",
+          "text": "\"Thanks for your feedback!\" shows and the form and footer buttons are gone"
+        },
+        {
+          "keyword": "And",
+          "text": "a toast reads \"Feedback sent. Thank you!\""
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-03-05",
+      "title": "Escape discards",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "I typed a message"
+        },
+        {
+          "keyword": "When",
+          "text": "I press Escape"
+        },
+        {
+          "keyword": "Then",
+          "text": "the modal closes and the login page shows; reopening shows an empty form"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-03-06",
+      "title": "Message cap",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "I paste 1200 characters into Message"
+        },
+        {
+          "keyword": "Then",
+          "text": "only the first 1000 remain"
+        }
+      ]
+    }
+  ],
+  "open_questions": [
+    "OQ-A-18",
+    "OQ-A-19",
+    "OQ-A-20",
+    "OQ-A-21",
+    "OQ-A-22",
+    "OQ-A-28"
+  ],
+  "capture": {
+    "controls": 0,
+    "dead_controls": 0,
+    "tables": 0,
+    "stat_tiles": 0,
+    "role_variants": [],
+    "forms": 0
+  }
+}

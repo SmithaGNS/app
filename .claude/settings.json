@@ -10,7 +10,7 @@
       "Bash(git branch:*)", "Bash(git merge:*)", "Bash(git rebase:*)", "Bash(git stash:*)",
       "Bash(git init:*)", "Bash(git remote:*)", "Bash(git fetch:*)", "Bash(git pull:*)", "Bash(git clone:*)",
       "Bash(git push origin dev-release:*)", "Bash(git push -u origin dev-release:*)",
-      "Bash(psql:*)", "Bash(createdb:*)", "Bash(pg_isready:*)",
+      "Bash(mysql:*)", "Bash(mysqladmin:*)",
       "Bash(docker compose:*)", "Bash(docker ps:*)",
       "Bash(curl:*)", "Bash(ls:*)", "Bash(cat:*)", "Bash(find:*)", "Bash(grep:*)", "Bash(mkdir:*)",
       "Bash(cp:*)", "Bash(mv:*)", "Bash(sha256sum:*)", "Bash(shasum:*)", "Bash(date:*)",

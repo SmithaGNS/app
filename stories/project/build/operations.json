@@ -1,0 +1,83 @@
+{
+  "generated_by": {
+    "plugin": "ux-prototype-to-screen-stories",
+    "version": "3.4.0",
+    "generator": "build_pack.py"
+  },
+  "why": "Every action key in the product, the screens that raise it and the labels it appears under. Consolidated, this is the operation surface a back end has to answer — visible nowhere in a single story.",
+  "count": 8,
+  "operations": [
+    {
+      "key": "app-add",
+      "screens": [
+        "appusers"
+      ],
+      "labels": [
+        "＋ Add App User"
+      ]
+    },
+    {
+      "key": "cat-add",
+      "screens": [
+        "category"
+      ],
+      "labels": [
+        "＋ Add Category"
+      ]
+    },
+    {
+      "key": "config-save",
+      "screens": [
+        "config"
+      ],
+      "labels": [
+        "Update"
+      ]
+    },
+    {
+      "key": "owner-add",
+      "screens": [
+        "owners"
+      ],
+      "labels": [
+        "＋ Add Owner"
+      ]
+    },
+    {
+      "key": "save-change-password",
+      "screens": [
+        "profile"
+      ],
+      "labels": [
+        "Update password"
+      ]
+    },
+    {
+      "key": "user-add",
+      "screens": [
+        "users"
+      ],
+      "labels": [
+        "＋ Add User"
+      ]
+    },
+    {
+      "key": "viol-filter",
+      "screens": [
+        "violations"
+      ],
+      "labels": [
+        "Filter"
+      ]
+    },
+    {
+      "key": "viol-reset",
+      "screens": [
+        "violations"
+      ],
+      "labels": [
+        "Reset"
+      ]
+    }
+  ]
+}

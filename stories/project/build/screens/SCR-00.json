@@ -1,0 +1,283 @@
+{
+  "generated_by": {
+    "plugin": "ux-prototype-to-screen-stories",
+    "version": "3.4.0",
+    "generator": "build_pack.py"
+  },
+  "screen_id": "SCR-00",
+  "screen_name": "Login",
+  "route": "#login (section #login; boot screen, go('login'))",
+  "module": "Auth",
+  "nav_label": "none (pre-authentication)",
+  "priority": "must",
+  "derived": false,
+  "actors": [
+    "Portal user (Administrator",
+    "Violation manager)"
+  ],
+  "story": "screen-stories/01-auth/SCR-00-login.md",
+  "screenshots": [
+    "screen-stories/screenshots/auth-login.png"
+  ],
+  "embedded_images": [
+    "screen-stories/screenshots/auth-login.png",
+    "screen-stories/screenshots/auth-login.png"
+  ],
+  "actions": [
+    {
+      "control": "Username",
+      "kind": "Text input",
+      "outcome": "Free text accepted, autocomplete=\"username\"",
+      "goes_to": "—",
+      "who_may": "anyone (pre-login)",
+      "disabled_when": "—"
+    },
+    {
+      "control": "Password",
+      "kind": "Password input (masked)",
+      "outcome": "Free text, autocomplete=\"current-password\". There is no show/hide eye on this field (unlike the Profile screen)",
+      "goes_to": "—",
+      "who_may": "anyone (pre-login)",
+      "disabled_when": "—"
+    },
+    {
+      "control": "Forgot Password?",
+      "kind": "Text button (data-go=\"forgot\")",
+      "outcome": "Switches the visible section to the Reset-your-password form and clears its field",
+      "goes_to": "SCR-01",
+      "who_may": "anyone (pre-login)",
+      "disabled_when": "never"
+    },
+    {
+      "control": "LOGIN (aria-label=\"Sign in\")",
+      "kind": "Primary button",
+      "outcome": "Calls invisible reCAPTCHA v3 stub (action login, fixed score 0.9, console log only), sets OTP mode to login, stores the Username (trimmed; the literal text \"your email\" if blank) as the address echoed on the OTP screen, switches to the OTP screen. No credential check occurs",
+      "goes_to": "SCR-02 login mode",
+      "who_may": "anyone (pre-login)",
+      "disabled_when": "never, even with both fields empty"
+    },
+    {
+      "control": "Feedback",
+      "kind": "Text button",
+      "outcome": "Clears and shows the Feedback modal over the login page",
+      "goes_to": "SCR-03",
+      "who_may": "anyone (pre-login)",
+      "disabled_when": "never"
+    }
+  ],
+  "validation": [
+    {
+      "field": "Username",
+      "rule": "Required, trimmed, 3-254 chars (email or username accepted: format undecided, OQ-A-05)",
+      "status": "PROPOSED",
+      "when": "on submit",
+      "message": "\"Username is required.\""
+    },
+    {
+      "field": "Username",
+      "rule": "Characters < and > are stripped as typed",
+      "status": "declared (global input filter in app.js)",
+      "when": "on input",
+      "message": "silent"
+    },
+    {
+      "field": "Password",
+      "rule": "Required, 1-128 chars (128 mirrors PASSWORD_MAX in the password policy)",
+      "status": "PROPOSED",
+      "when": "on submit",
+      "message": "\"Password is required.\""
+    },
+    {
+      "field": "Password",
+      "rule": "Not trimmed, not stripped; type=password",
+      "status": "declared",
+      "when": "—",
+      "message": "—"
+    },
+    {
+      "field": "Credentials",
+      "rule": "Must match an account",
+      "status": "PROPOSED",
+      "when": "on submit",
+      "message": "\"Incorrect username or password.\" (generic, must not reveal which)"
+    },
+    {
+      "field": "Username",
+      "rule": "Is it an email, a handle or either? Forgot-password asks for an email, so they are probably the same",
+      "status": "OQ-A-05",
+      "when": "",
+      "message": ""
+    },
+    {
+      "field": "Attempt limit",
+      "rule": "No lockout or throttling",
+      "status": "OQ-A-03",
+      "when": "",
+      "message": ""
+    }
+  ],
+  "states": [
+    {
+      "state": "Default",
+      "when": "Page load, after logout",
+      "shows": "Empty Username and Password, placeholders \"Enter your username\" / \"Enter your password\""
+    },
+    {
+      "state": "Error",
+      "when": "Wrong credentials",
+      "shows": "Undefined, OQ-A-01. The prototype never checks credentials; LOGIN always proceeds"
+    },
+    {
+      "state": "Loading",
+      "when": "Sign-in in flight",
+      "shows": "Undefined, OQ-A-02"
+    },
+    {
+      "state": "Locked / throttled",
+      "when": "Too many attempts",
+      "shows": "Undefined, OQ-A-03"
+    },
+    {
+      "state": "Empty-submit",
+      "when": "LOGIN pressed with blank fields",
+      "shows": "Proceeds to SCR-02 anyway (see OQ-A-01)"
+    }
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "ST-SCR-00-01",
+      "title": "Login page renders",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "I open the portal without a session"
+        },
+        {
+          "keyword": "When",
+          "text": "the page loads"
+        },
+        {
+          "keyword": "Then",
+          "text": "I see \"Welcome back\", empty Username and Password fields and a LOGIN button"
+        },
+        {
+          "keyword": "And",
+          "text": "the shell (sidebar, header) is hidden"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-00-02",
+      "title": "LOGIN proceeds to code entry",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "I typed Username \"ronald\" and any Password"
+        },
+        {
+          "keyword": "When",
+          "text": "I press LOGIN"
+        },
+        {
+          "keyword": "Then",
+          "text": "the OTP screen appears reading \"Enter the 6-digit code sent to ronald\""
+        },
+        {
+          "keyword": "And",
+          "text": "its back link reads \"← Back to sign in\""
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-00-03",
+      "title": "Forgot password link",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "I am on the login page"
+        },
+        {
+          "keyword": "When",
+          "text": "I press Forgot Password?"
+        },
+        {
+          "keyword": "Then",
+          "text": "SCR-01 appears with an empty Email address field"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-00-04",
+      "title": "Feedback link",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "I am on the login page"
+        },
+        {
+          "keyword": "When",
+          "text": "I press Feedback"
+        },
+        {
+          "keyword": "Then",
+          "text": "the Feedback modal appears and focus moves to its first control (the × button)"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-00-05",
+      "title": "Empty submit (as built, flagged)",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "Username and Password are both empty"
+        },
+        {
+          "keyword": "When",
+          "text": "I press LOGIN"
+        },
+        {
+          "keyword": "Then",
+          "text": "the OTP screen appears reading \"sent to your email\" (defect, OQ-A-01)"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-00-06",
+      "title": "Proposed required-field behaviour",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "Username is empty (PROPOSED rule)"
+        },
+        {
+          "keyword": "When",
+          "text": "I press LOGIN"
+        },
+        {
+          "keyword": "Then",
+          "text": "\"Username is required.\" shows under the field and no navigation occurs"
+        }
+      ]
+    }
+  ],
+  "open_questions": [
+    "OQ-A-00",
+    "OQ-A-01",
+    "OQ-A-02",
+    "OQ-A-03",
+    "OQ-A-04",
+    "OQ-A-05",
+    "OQ-A-06",
+    "OQ-A-07",
+    "OQ-A-08"
+  ],
+  "capture": {
+    "controls": 0,
+    "dead_controls": 0,
+    "tables": 0,
+    "stat_tiles": 0,
+    "role_variants": [],
+    "forms": 0
+  }
+}

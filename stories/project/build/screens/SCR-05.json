@@ -1,0 +1,310 @@
+{
+  "generated_by": {
+    "plugin": "ux-prototype-to-screen-stories",
+    "version": "3.4.0",
+    "generator": "build_pack.py"
+  },
+  "screen_id": "SCR-05",
+  "screen_name": "Dashboard",
+  "route": "#dashboard (section #dashboard)",
+  "module": "Violations",
+  "nav_label": "Dashboard",
+  "priority": "must",
+  "derived": false,
+  "actors": [
+    "Administrator",
+    "Violation manager"
+  ],
+  "story": "screen-stories/02-violations/SCR-05-dashboard.md",
+  "screenshots": [
+    "screen-stories/screenshots/dashboard.png"
+  ],
+  "embedded_images": [
+    "screen-stories/screenshots/dashboard.png",
+    "screen-stories/screenshots/dashboard.png"
+  ],
+  "actions": [
+    {
+      "control": "Tile Violation reports",
+      "kind": "Link (data-go)",
+      "outcome": "Switches to the violations list, no filter carried",
+      "goes_to": "SCR-06",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-A-27)",
+      "disabled_when": "never"
+    },
+    {
+      "control": "Tile Pending review",
+      "kind": "Link",
+      "outcome": "Same as above; does not pre-filter by Pending (there is no status filter on SCR-06), OQ-V-04",
+      "goes_to": "SCR-06",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-A-27)",
+      "disabled_when": "never"
+    },
+    {
+      "control": "Tile Verified",
+      "kind": "Link",
+      "outcome": "Same; no filter carried",
+      "goes_to": "SCR-06",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-A-27)",
+      "disabled_when": "never"
+    },
+    {
+      "control": "Tile Rejected",
+      "kind": "Link",
+      "outcome": "Same; no filter carried",
+      "goes_to": "SCR-06",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-A-27)",
+      "disabled_when": "never"
+    },
+    {
+      "control": "Tile Categories",
+      "kind": "Link",
+      "outcome": "Switches to the Category list and expands the sidebar Category Management group",
+      "goes_to": "SCR-10 Category list",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-A-27)",
+      "disabled_when": "never"
+    },
+    {
+      "control": "Tile App users",
+      "kind": "Link",
+      "outcome": "Switches to App user List, expanding User Management",
+      "goes_to": "SCR-21 App user List",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-A-27)",
+      "disabled_when": "never"
+    },
+    {
+      "control": "Tile Portal users",
+      "kind": "Link",
+      "outcome": "Switches to Admin user List",
+      "goes_to": "SCR-20 Admin user List",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-A-27)",
+      "disabled_when": "never"
+    },
+    {
+      "control": "Tile Messages",
+      "kind": "Link",
+      "outcome": "Switches to Manage Contact Us",
+      "goes_to": "SCR-13 Manage Contact Us",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-A-27)",
+      "disabled_when": "never"
+    },
+    {
+      "control": "View all",
+      "kind": "Button",
+      "outcome": "Switches to the violations list",
+      "goes_to": "SCR-06",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-A-27)",
+      "disabled_when": "never"
+    },
+    {
+      "control": "👁 beside a mobile number (aria-label \"Show full phone number\")",
+      "kind": "Icon toggle",
+      "outcome": "Replaces the masked number with the full number in that row and flips its label to \"Hide full phone number\" and icon to 🙈; press again to mask. Per row, in-place, not persisted, not audited",
+      "goes_to": "—",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-A-27)",
+      "disabled_when": "never"
+    },
+    {
+      "control": "👁 in Option column (aria-label \"Review report 1\" through \"Review report 5\", one per row)",
+      "kind": "Icon button",
+      "outcome": "Shows the Review modal for that report",
+      "goes_to": "SCR-07",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-A-27)",
+      "disabled_when": "never"
+    },
+    {
+      "control": "Sidebar, header, account menu",
+      "kind": "Shell",
+      "outcome": "See SCR-04",
+      "goes_to": "—",
+      "who_may": "—",
+      "disabled_when": "—"
+    }
+  ],
+  "validation": [
+    {
+      "field": "(none)",
+      "rule": "No input fields",
+      "status": "n/a",
+      "when": "n/a",
+      "message": "n/a"
+    },
+    {
+      "field": "Latest reports",
+      "rule": "Exactly 5 rows, newest Created At first",
+      "status": "PROPOSED",
+      "when": "on load",
+      "message": "—"
+    }
+  ],
+  "states": [
+    {
+      "state": "Populated",
+      "when": "Always in the prototype",
+      "shows": "Figures as in the capture; a toast \"Signed in successfully.\" from the login for 3.5 s"
+    },
+    {
+      "state": "Empty",
+      "when": "Zero violations",
+      "shows": "Undefined, OQ-V-01: table body would be blank, tiles 0, pending badge hidden"
+    },
+    {
+      "state": "Loading",
+      "when": "Counts in flight",
+      "shows": "Undefined, OQ-V-02"
+    },
+    {
+      "state": "Error",
+      "when": "Counts fail",
+      "shows": "Undefined, OQ-V-02"
+    },
+    {
+      "state": "Permission denied",
+      "when": "Role lacks access",
+      "shows": "Undefined, OQ-V-03; both roles see the same screen"
+    }
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "ST-SCR-05-01",
+      "title": "Tiles on arrival",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "I just signed in"
+        },
+        {
+          "keyword": "When",
+          "text": "the Dashboard loads"
+        },
+        {
+          "keyword": "Then",
+          "text": "the tiles read Violation reports 23, Pending review 23, Verified 0, Rejected 0, Categories 10, App users 3,123, Portal users 8, Messages 24"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-05-02",
+      "title": "Funnel",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "the same data"
+        },
+        {
+          "keyword": "Then",
+          "text": "the funnel reads Submitted 23, Pending 23, Under review 0, Verified 0, Rejected 0"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-05-03",
+      "title": "Latest five",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "the same data"
+        },
+        {
+          "keyword": "Then",
+          "text": "the table lists exactly five rows S No 1 to 5 with columns S No, Mobile, Category, Location, Created At, Status, Option"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-05-04",
+      "title": "Phone masked",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "row 1 shows \"+1 876 ····290\""
+        },
+        {
+          "keyword": "When",
+          "text": "I press its eye icon"
+        },
+        {
+          "keyword": "Then",
+          "text": "it reads \"+1 876 3125290\" and the icon becomes 🙈"
+        },
+        {
+          "keyword": "And",
+          "text": "pressing again returns to the masked text"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-05-05",
+      "title": "Review from dashboard",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "row 1 is listed"
+        },
+        {
+          "keyword": "When",
+          "text": "I press its Option eye button"
+        },
+        {
+          "keyword": "Then",
+          "text": "the modal \"Violation #1 — Breaking One way/No Entry\" shows"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-05-06",
+      "title": "Counts follow a review",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "I saved report 1 as Verified (SCR-07)"
+        },
+        {
+          "keyword": "When",
+          "text": "I return to the Dashboard"
+        },
+        {
+          "keyword": "Then",
+          "text": "Pending reads 22, Verified reads 1, the sidebar badge reads 22 and row 1 shows a green Verified chip"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-05-07",
+      "title": "Tile navigation",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "the Dashboard"
+        },
+        {
+          "keyword": "When",
+          "text": "I press the Violation reports tile"
+        },
+        {
+          "keyword": "Then",
+          "text": "the list \"User uploaded Violations\" shows and the sidebar item Manage Violation Uploads is highlighted"
+        }
+      ]
+    }
+  ],
+  "open_questions": [
+    "OQ-V-00",
+    "OQ-V-01",
+    "OQ-V-02",
+    "OQ-V-03",
+    "OQ-V-04",
+    "OQ-V-05",
+    "OQ-V-06",
+    "OQ-V-07",
+    "OQ-V-08"
+  ],
+  "capture": {
+    "controls": 0,
+    "dead_controls": 0,
+    "tables": 0,
+    "stat_tiles": 0,
+    "role_variants": [],
+    "forms": 0
+  }
+}

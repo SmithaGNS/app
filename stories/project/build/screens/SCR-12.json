@@ -1,0 +1,166 @@
+{
+  "generated_by": {
+    "plugin": "ux-prototype-to-screen-stories",
+    "version": "3.4.0",
+    "generator": "build_pack.py"
+  },
+  "screen_id": "SCR-12",
+  "screen_name": "Config (badge name)",
+  "route": "#config (section id=config; go('config'))",
+  "module": "Catalogue",
+  "nav_label": "Config",
+  "priority": "should",
+  "derived": false,
+  "actors": [
+    "Signed-in portal user"
+  ],
+  "story": "screen-stories/03-catalogue/SCR-12-config.md",
+  "screenshots": [
+    "screen-stories/screenshots/config.png"
+  ],
+  "embedded_images": [
+    "screen-stories/screenshots/config.png",
+    "screen-stories/screenshots/config.png"
+  ],
+  "actions": [
+    {
+      "control": "Update",
+      "kind": "Button (primary), inside a form with submit suppressed",
+      "outcome": "Trims the field. Empty: sets the invalid ring, stops. Otherwise writes the value into every .badge-name element, stores it in the browser's localStorage key drivesafe_badge_name (this device only), shows the success toast. Verified on the running prototype (Playwright, 2026-10-26): pressing Enter in the field saves exactly as the button does (value stored, toast shown, no page reload; the Update button is the form's default submit button). Pressing Enter on a blank field sets aria-invalid and shows nothing else",
+      "goes_to": "SCR-12",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-12-04)",
+      "disabled_when": "never"
+    }
+  ],
+  "validation": [
+    {
+      "field": "Badge Name (cfg-badge)",
+      "rule": "Required, trimmed; min 1, max 100 characters",
+      "status": "PROPOSED",
+      "when": "Update only (no blur validation, no live clearing because the field has no aria-describedby)",
+      "message": "Badge Name is required. (see invisibility defect)"
+    },
+    {
+      "field": "Badge Name characters",
+      "rule": "< > stripped as typed",
+      "status": "declared (global filter)",
+      "when": "input",
+      "message": "silent"
+    }
+  ],
+  "states": [
+    {
+      "state": "Default",
+      "when": "Open",
+      "shows": "Field holds the saved badge name (seed \"Ministry of Transport and Mining\", or the value restored from localStorage)"
+    },
+    {
+      "state": "Invalid",
+      "when": "Update pressed with empty or blank field",
+      "shows": "Field gets a red ring and aria-invalid. The text \"Badge Name is required.\" is not visible: the markup has no #err-cfg-badge element, so the message is lost (OQ-12-02). No capture exists of this state"
+    },
+    {
+      "state": "Saved",
+      "when": "Valid update",
+      "shows": "Toast Config updated. Badge Name set to \"{value}\".; auth screens show the new text immediately"
+    },
+    {
+      "state": "Empty / Loading / Error / Permission",
+      "when": "—",
+      "shows": "None exist; a settings form has no empty state. Permission undefined, OQ-12-04"
+    }
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "ST-SCR-12-01",
+      "title": "Seed value",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "I open Settings > Config for the first time"
+        },
+        {
+          "keyword": "Then",
+          "text": "Badge Name reads \"Ministry of Transport and Mining\""
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-12-02",
+      "title": "Update",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "I replace the text with \"Jamaica Transport Authority\" and press Update"
+        },
+        {
+          "keyword": "Then",
+          "text": "a toast reads Config updated. Badge Name set to \"Jamaica Transport Authority\"."
+        },
+        {
+          "keyword": "And",
+          "text": "after signing out the sign-in screen shows that text under \"Admin Portal\""
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-12-03",
+      "title": "Blank rejected",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "I clear the field and press Update"
+        },
+        {
+          "keyword": "Then",
+          "text": "the field is outlined red and the saved value is unchanged"
+        },
+        {
+          "keyword": "And",
+          "text": "a visible \"Badge Name is required.\" message is shown (currently missing in the prototype, see OQ-12-02)"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-12-04",
+      "title": "Persists across reload",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "I saved \"Test Org\""
+        },
+        {
+          "keyword": "When",
+          "text": "I reload the page and open Config"
+        },
+        {
+          "keyword": "Then",
+          "text": "the field reads \"Test Org\""
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-12-05",
+      "title": "Whitespace",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "I enter only spaces and press Update"
+        },
+        {
+          "keyword": "Then",
+          "text": "it is treated as empty and rejected"
+        }
+      ]
+    }
+  ],
+  "open_questions": [],
+  "capture": {
+    "controls": 0,
+    "dead_controls": 0,
+    "tables": 0,
+    "stat_tiles": 0,
+    "role_variants": [],
+    "forms": 0
+  }
+}

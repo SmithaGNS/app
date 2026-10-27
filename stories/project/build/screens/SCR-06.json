@@ -1,0 +1,440 @@
+{
+  "generated_by": {
+    "plugin": "ux-prototype-to-screen-stories",
+    "version": "3.4.0",
+    "generator": "build_pack.py"
+  },
+  "screen_id": "SCR-06",
+  "screen_name": "User uploaded Violations (list)",
+  "route": "#violations (section #violations)",
+  "module": "Violations",
+  "nav_label": "Manage Violation Uploads",
+  "priority": "must",
+  "derived": false,
+  "actors": [
+    "Administrator",
+    "Violation manager"
+  ],
+  "story": "screen-stories/02-violations/SCR-06-violations-list.md",
+  "screenshots": [
+    "screen-stories/screenshots/violations.png"
+  ],
+  "embedded_images": [
+    "screen-stories/screenshots/violations.png",
+    "screen-stories/screenshots/violations.png"
+  ],
+  "actions": [
+    {
+      "control": "Category Owner",
+      "kind": "Select",
+      "outcome": "Chooses the owner to filter by; options: \"All Category Owners\" (empty) plus every owner (today: Police). Takes effect only when Filter is pressed",
+      "goes_to": "—",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-A-27)",
+      "disabled_when": "—"
+    },
+    {
+      "control": "Created From",
+      "kind": "Date input",
+      "outcome": "Lower bound on the date part of Created At, inclusive",
+      "goes_to": "—",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-A-27)",
+      "disabled_when": "—"
+    },
+    {
+      "control": "Created To",
+      "kind": "Date input",
+      "outcome": "Upper bound on the date part, inclusive",
+      "goes_to": "—",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-A-27)",
+      "disabled_when": "—"
+    },
+    {
+      "control": "Filter",
+      "kind": "Button (blue)",
+      "outcome": "Hides every loaded row failing owner and date tests (all three AND-ed); sets count text \"Showing N of 10 entries\". Acts on the 10 loaded rows only, not on pages 2 and 3",
+      "goes_to": "—",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-A-27)",
+      "disabled_when": "never"
+    },
+    {
+      "control": "Reset",
+      "kind": "Button (grey)",
+      "outcome": "Clears the three filter inputs, un-hides every row, sets count text \"Showing 1 to 10 of 23 entries\". Does not clear the search box",
+      "goes_to": "—",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-A-27)",
+      "disabled_when": "never"
+    },
+    {
+      "control": "Search violations…",
+      "kind": "Search input",
+      "outcome": "Hides rows whose text does not contain the typed text (case-insensitive) on every keystroke and when the native ✕ clears; searches visible text only (the masked mobile, not the full number)",
+      "goes_to": "—",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-A-27)",
+      "disabled_when": "—"
+    },
+    {
+      "control": "CSV",
+      "kind": "Button",
+      "outcome": "Wired to nothing. Intended: download rows as CSV",
+      "goes_to": "—",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-A-27)",
+      "disabled_when": "never"
+    },
+    {
+      "control": "Excel",
+      "kind": "Button",
+      "outcome": "Wired to nothing.",
+      "goes_to": "—",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-A-27)",
+      "disabled_when": "never"
+    },
+    {
+      "control": "Print",
+      "kind": "Button",
+      "outcome": "Wired to nothing.",
+      "goes_to": "—",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-A-27)",
+      "disabled_when": "never"
+    },
+    {
+      "control": "👁 beside mobile (\"Show full phone number\")",
+      "kind": "Icon toggle",
+      "outcome": "Shows/hides the full number for that row; reflects aria-pressed; reset by any table re-render",
+      "goes_to": "—",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-A-27)",
+      "disabled_when": "never"
+    },
+    {
+      "control": "👁 Option (\"View / review report N\")",
+      "kind": "Icon button",
+      "outcome": "Shows the Review modal for report N, with the modal's fields pre-filled from the row",
+      "goes_to": "SCR-07",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-A-27)",
+      "disabled_when": "never"
+    },
+    {
+      "control": "Show [10 / 25 / 50 / 100] entries",
+      "kind": "Select",
+      "outcome": "Lets the user pick 10, 25, 50 or 100; no handler: choosing changes nothing",
+      "goes_to": "—",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-A-27)",
+      "disabled_when": "—"
+    },
+    {
+      "control": "Previous",
+      "kind": "Pager button",
+      "outcome": "Wired to nothing; also never disabled even on page 1 (other list screens disable it)",
+      "goes_to": "—",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-A-27)",
+      "disabled_when": "never"
+    },
+    {
+      "control": "1",
+      "kind": "Pager button (current)",
+      "outcome": "Marks the current page (aria-current=page); inert",
+      "goes_to": "—",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-A-27)",
+      "disabled_when": "—"
+    },
+    {
+      "control": "2",
+      "kind": "Pager button",
+      "outcome": "Wired to nothing. Page 2 holds rows 11-20, not built",
+      "goes_to": "—",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-A-27)",
+      "disabled_when": "never"
+    },
+    {
+      "control": "3",
+      "kind": "Pager button",
+      "outcome": "Wired to nothing. Page 3 holds rows 21-23",
+      "goes_to": "—",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-A-27)",
+      "disabled_when": "never"
+    },
+    {
+      "control": "Next",
+      "kind": "Pager button",
+      "outcome": "Wired to nothing",
+      "goes_to": "—",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-A-27)",
+      "disabled_when": "never"
+    }
+  ],
+  "validation": [
+    {
+      "field": "Category Owner (vf-owner)",
+      "rule": "Single select, closed set: \"\" (All Category Owners) plus each Owner name from SCR-11 (today: Police); default empty; refreshes when owners change",
+      "status": "declared (select, filled from OWNERS)",
+      "when": "on Filter",
+      "message": "—"
+    },
+    {
+      "field": "Created From (vf-from)",
+      "rule": "Optional date, ISO yyyy-mm-dd from the native picker (declared, no bound declared). Bounds min 2020-01-01, max today",
+      "status": "PROPOSED",
+      "when": "on Filter / on change",
+      "message": "\"Choose a date between 1 Jan 2020 and today.\""
+    },
+    {
+      "field": "Created To (vf-to)",
+      "rule": "Optional date (declared, no bound declared). Bounds min = Created From (or 2020-01-01), max today",
+      "status": "PROPOSED",
+      "when": "on Filter / on change",
+      "message": "same"
+    },
+    {
+      "field": "Search violations",
+      "rule": "Free text, 0-100 characters, < > stripped as typed (stripping declared). The 100 limit and trimming of leading/trailing spaces are PROPOSED: the prototype has no maxlength and does not trim (two leading spaces before \"parking\" return 0 rows). All six list screens (SCR-06, 10, 11, 13, 20, 21) propose the same 100, OQ-V-26",
+      "status": "PROPOSED",
+      "when": "on input",
+      "message": "—"
+    },
+    {
+      "field": "Show 10 25 50 100 entries",
+      "rule": "One of 10, 25, 50, 100; default 10 (declared select options); no handler as built",
+      "status": "declared (select)",
+      "when": "—",
+      "message": "—"
+    },
+    {
+      "field": "Level",
+      "rule": "Meaning of 0, 1, 2, 3 and who sets it",
+      "status": "OQ-V-16",
+      "when": "",
+      "message": ""
+    },
+    {
+      "field": "Date range",
+      "rule": "Time zone of Created At and of the date filter",
+      "status": "OQ-V-17",
+      "when": "",
+      "message": ""
+    }
+  ],
+  "states": [
+    {
+      "state": "Populated",
+      "when": "Default",
+      "shows": "10 rows, info text \"Showing 1 to 10 of 23 entries\", pager Previous 1 2 3 Next"
+    },
+    {
+      "state": "Filtered",
+      "when": "Filter pressed",
+      "shows": "Non-matching rows hidden; info text \"Showing N of 10 entries\" (N = rows shown)"
+    },
+    {
+      "state": "Filtered to nothing",
+      "when": "Filter matches no row (e.g. owner Police: no loaded violation's category has that owner)",
+      "shows": "Table body blank and \"Showing 0 of 10 entries\"; no empty-state message, OQ-V-09"
+    },
+    {
+      "state": "Stale count after a re-render",
+      "when": "A review is saved (SCR-07) or a category is saved or deleted",
+      "shows": "The table body is rebuilt and shows all rows, but #viol-info keeps its previous filtered text, e.g. \"Showing 2 of 10 entries\", and the filter and search inputs keep their values, OQ-V-15"
+    },
+    {
+      "state": "Reset with search text",
+      "when": "Reset pressed while the search box holds text",
+      "shows": "Rows the search had hidden are shown again, but the search box keeps its text, OQ-V-15"
+    },
+    {
+      "state": "Searching",
+      "when": "Text typed in the search box",
+      "shows": "Rows whose text contains the query (case-insensitive, matched against the visible row text, so the masked mobile unless that row is revealed) remain; info text is not updated"
+    },
+    {
+      "state": "Masked",
+      "when": "Default",
+      "shows": "Mobile shows \"+1 876 ····290\""
+    },
+    {
+      "state": "Revealed",
+      "when": "Eye pressed in a row",
+      "shows": "That row shows \"+1 876 3125290\""
+    },
+    {
+      "state": "Loading / error",
+      "when": "Data in flight / failed",
+      "shows": "Undefined, OQ-V-02"
+    },
+    {
+      "state": "Narrow and mid-width viewports",
+      "when": "Measured with Playwright",
+      "shows": "The table has a minimum width of 72 rem (about 1150 px plus padding) inside a horizontally scrolling .table-wrap. The wrapper scrolls at every viewport width tested from 390 up to 2400 px (e.g. 390: 300 px visible of 1604; 1440: 1010 of 1656; 1920: 1466 of 1656) and fits only at about 2560 px. The scroll is not limited to phones. Below 1024 px the sidebar also becomes an off-canvas drawer (SCR-04), OQ-V-10"
+    }
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "ST-SCR-06-01",
+      "title": "Page load",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "I open Manage Violation Uploads"
+        },
+        {
+          "keyword": "Then",
+          "text": "the table shows 10 rows with S No 1 to 10, every Status chip reads Pending"
+        },
+        {
+          "keyword": "And",
+          "text": "the count text reads \"Showing 1 to 10 of 23 entries\""
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-06-02",
+      "title": "Masked phone",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "row 1"
+        },
+        {
+          "keyword": "Then",
+          "text": "Mobile reads \"+1 876 ····290\""
+        },
+        {
+          "keyword": "When",
+          "text": "I press the eye beside it"
+        },
+        {
+          "keyword": "Then",
+          "text": "it reads \"+1 876 3125290\""
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-06-03",
+      "title": "Date filter",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "Created From 2026-09-01 and Created To 2026-09-30"
+        },
+        {
+          "keyword": "When",
+          "text": "I press Filter"
+        },
+        {
+          "keyword": "Then",
+          "text": "only rows 1 and 2 remain and the count text reads \"Showing 2 of 10 entries\""
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-06-04",
+      "title": "Owner filter with no matches",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "Category Owner \"Police\""
+        },
+        {
+          "keyword": "When",
+          "text": "I press Filter"
+        },
+        {
+          "keyword": "Then",
+          "text": "no rows show and the count text reads \"Showing 0 of 10 entries\" (no empty message, OQ-V-09)"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-06-05",
+      "title": "Reset",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "a filter is active"
+        },
+        {
+          "keyword": "When",
+          "text": "I press Reset"
+        },
+        {
+          "keyword": "Then",
+          "text": "the three inputs are empty, all 10 rows show and the text reads \"Showing 1 to 10 of 23 entries\""
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-06-06",
+      "title": "Search",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "the table is unfiltered"
+        },
+        {
+          "keyword": "When",
+          "text": "I type \"parking\""
+        },
+        {
+          "keyword": "Then",
+          "text": "only rows 3, 6, 7, 8 and 9 remain"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-06-07",
+      "title": "Review button",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "row 3"
+        },
+        {
+          "keyword": "When",
+          "text": "I press its Option button"
+        },
+        {
+          "keyword": "Then",
+          "text": "the modal \"Violation #3 — Wrong parking\" shows"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-06-08",
+      "title": "Unbuilt controls",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "the page"
+        },
+        {
+          "keyword": "When",
+          "text": "I press CSV, Excel, Print, Next or page 2"
+        },
+        {
+          "keyword": "Then",
+          "text": "nothing happens (as built; flagged OQ-V-12, OQ-V-13)"
+        }
+      ]
+    }
+  ],
+  "open_questions": [
+    "OQ-V-09",
+    "OQ-V-10",
+    "OQ-V-11",
+    "OQ-V-12",
+    "OQ-V-13",
+    "OQ-V-14",
+    "OQ-V-15",
+    "OQ-V-16",
+    "OQ-V-17",
+    "OQ-V-18",
+    "OQ-V-19",
+    "OQ-V-20",
+    "OQ-V-26"
+  ],
+  "capture": {
+    "controls": 0,
+    "dead_controls": 0,
+    "tables": 0,
+    "stat_tiles": 0,
+    "role_variants": [],
+    "forms": 0
+  }
+}

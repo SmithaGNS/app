@@ -1,0 +1,218 @@
+{
+  "generated_by": {
+    "plugin": "ux-prototype-to-screen-stories",
+    "version": "3.4.0",
+    "generator": "build_pack.py"
+  },
+  "screen_id": "SCR-01",
+  "screen_name": "Forgot password",
+  "route": "#forgot (section #forgot)",
+  "module": "Auth",
+  "nav_label": "none (pre-authentication)",
+  "priority": "must",
+  "derived": false,
+  "actors": [
+    "Portal user"
+  ],
+  "story": "screen-stories/01-auth/SCR-01-forgot-password.md",
+  "screenshots": [
+    "screen-stories/screenshots/auth-forgot.png",
+    "screen-stories/screenshots/auth-forgot-error.png"
+  ],
+  "embedded_images": [
+    "screen-stories/screenshots/auth-forgot.png",
+    "screen-stories/screenshots/auth-forgot.png",
+    "screen-stories/screenshots/auth-forgot-error.png"
+  ],
+  "actions": [
+    {
+      "control": "Email address",
+      "kind": "Email input",
+      "outcome": "Validated on blur and on Send; error clears on typing",
+      "goes_to": "—",
+      "who_may": "anyone",
+      "disabled_when": "—"
+    },
+    {
+      "control": "Send code",
+      "kind": "Primary button",
+      "outcome": "Validates the form; if valid calls reCAPTCHA stub (forgot_password), sets OTP mode reset, stores trimmed email, shows SCR-02 and a toast. No request checks that the account exists",
+      "goes_to": "SCR-02 reset mode",
+      "who_may": "anyone",
+      "disabled_when": "never"
+    },
+    {
+      "control": "← Back to sign in",
+      "kind": "Text button",
+      "outcome": "Returns to the login screen; typed email is discarded on the next visit",
+      "goes_to": "SCR-00",
+      "who_may": "anyone",
+      "disabled_when": "never"
+    }
+  ],
+  "validation": [
+    {
+      "field": "Email address",
+      "rule": "Required (trimmed, whitespace-only counts as empty)",
+      "status": "declared (data-req)",
+      "when": "blur, submit",
+      "message": "\"Email is required.\""
+    },
+    {
+      "field": "Email address",
+      "rule": "Shape ^\\S+@\\S+\\.\\S+$",
+      "status": "declared (type=email plus regex in code)",
+      "when": "blur, submit",
+      "message": "\"Please enter a valid email address.\""
+    },
+    {
+      "field": "Email address",
+      "rule": "Length 5-254 characters",
+      "status": "PROPOSED",
+      "when": "blur, submit",
+      "message": "\"Please enter a valid email address.\""
+    },
+    {
+      "field": "Email address",
+      "rule": "< > stripped as typed",
+      "status": "declared (global filter)",
+      "when": "input",
+      "message": "silent"
+    }
+  ],
+  "states": [
+    {
+      "state": "Default",
+      "when": "Entering the screen (field cleared, errors cleared every time)",
+      "shows": "Heading \"Reset your password\", help text, empty field"
+    },
+    {
+      "state": "Error",
+      "when": "Send code with blank or malformed email",
+      "shows": "Red message under the field, focus returned to the field (the capture shows the blue focus ring over the red invalid outline)"
+    },
+    {
+      "state": "Sent",
+      "when": "A #forgot-sent block \"Check your email\" exists in the markup (with #fp-echo and a Back to sign in button) but no code ever shows it: Send code goes straight to SCR-02",
+      "shows": "Unreachable, see OQ-A-09"
+    },
+    {
+      "state": "Loading",
+      "when": "Send in flight",
+      "shows": "Undefined, OQ-A-02"
+    }
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "ST-SCR-01-01",
+      "title": "Required email",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "I am on Reset your password with an empty field"
+        },
+        {
+          "keyword": "When",
+          "text": "I press Send code"
+        },
+        {
+          "keyword": "Then",
+          "text": "\"Email is required.\" shows under the field and I stay on this screen"
+        },
+        {
+          "keyword": "And",
+          "text": "focus is in the field"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-01-02",
+      "title": "Malformed email",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "I typed \"abc\""
+        },
+        {
+          "keyword": "When",
+          "text": "I press Send code"
+        },
+        {
+          "keyword": "Then",
+          "text": "\"Please enter a valid email address.\" shows"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-01-03",
+      "title": "Valid email",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "I typed user@example.com"
+        },
+        {
+          "keyword": "When",
+          "text": "I press Send code"
+        },
+        {
+          "keyword": "Then",
+          "text": "the OTP screen shows \"Enter the 6-digit code sent to user@example.com.\""
+        },
+        {
+          "keyword": "And",
+          "text": "a green toast reads \"A 6-digit code was sent to user@example.com.\""
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-01-04",
+      "title": "Error clears while typing",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "the error is showing"
+        },
+        {
+          "keyword": "When",
+          "text": "I type a character"
+        },
+        {
+          "keyword": "Then",
+          "text": "the message and red outline disappear"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-01-05",
+      "title": "Back",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "I am on this screen"
+        },
+        {
+          "keyword": "When",
+          "text": "I press ← Back to sign in"
+        },
+        {
+          "keyword": "Then",
+          "text": "SCR-00 shows"
+        }
+      ]
+    }
+  ],
+  "open_questions": [
+    "OQ-A-09",
+    "OQ-A-10",
+    "OQ-A-11"
+  ],
+  "capture": {
+    "controls": 0,
+    "dead_controls": 0,
+    "tables": 0,
+    "stat_tiles": 0,
+    "role_variants": [],
+    "forms": 0
+  }
+}

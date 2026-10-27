@@ -1,0 +1,295 @@
+{
+  "generated_by": {
+    "plugin": "ux-prototype-to-screen-stories",
+    "version": "3.4.0",
+    "generator": "build_pack.py"
+  },
+  "screen_id": "SCR-11",
+  "screen_name": "Owner management",
+  "route": "#owners (section id=owners; go('owners'))",
+  "module": "Catalogue",
+  "nav_label": "Owners",
+  "priority": "must",
+  "derived": false,
+  "actors": [
+    "Signed-in portal user"
+  ],
+  "story": "screen-stories/03-catalogue/SCR-11-owners-list.md",
+  "screenshots": [
+    "screen-stories/screenshots/owners.png",
+    "screen-stories/screenshots/modal-owner-add.png",
+    "screen-stories/screenshots/modal-owner-add-invalid.png",
+    "screen-stories/screenshots/modal-owner-edit.png"
+  ],
+  "embedded_images": [
+    "screen-stories/screenshots/owners.png",
+    "screen-stories/screenshots/owners.png",
+    "screen-stories/screenshots/modal-owner-add.png",
+    "screen-stories/screenshots/modal-owner-add-invalid.png",
+    "screen-stories/screenshots/modal-owner-edit.png"
+  ],
+  "actions": [
+    {
+      "control": "Search owners…",
+      "kind": "Search input",
+      "outcome": "Live case-insensitive substring filter that hides non-matching rows",
+      "goes_to": "—",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-11-03)",
+      "disabled_when": "—"
+    },
+    {
+      "control": "CSV / Excel / Print",
+      "kind": "Buttons",
+      "outcome": "Wired to nothing",
+      "goes_to": "—",
+      "who_may": "—",
+      "disabled_when": "—"
+    },
+    {
+      "control": "＋ Add Owner",
+      "kind": "Button (green)",
+      "outcome": "Opens owner-modal titled \"Add Owner\", blank fields; focus on ×",
+      "goes_to": "modal owner-modal",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-11-03)",
+      "disabled_when": "—"
+    },
+    {
+      "control": "✎ Edit {owner} (aria-label \"Edit Police\")",
+      "kind": "Icon button",
+      "outcome": "Opens owner-modal titled \"Edit Owner\" filled from that row",
+      "goes_to": "modal owner-modal",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-11-03)",
+      "disabled_when": "—"
+    },
+    {
+      "control": "🗑 Delete {owner} (aria-label \"Delete Police\")",
+      "kind": "Icon button",
+      "outcome": "confirm('Delete owner \"Police\"?'). OK removes the owner from the list and from the Owner selects in SCR-10 and the violations filter; no toast. Categories already assigned to that owner keep the old owner name (and if you then press Edit on such a category and Save, its owner is silently blanked: SCR-10 Edit; the select then shows empty, nothing selected) and the table still displays it; the SCR-10 Edit select then cannot show it (it renders empty with no option selected)",
+      "goes_to": "native confirm",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-11-03)",
+      "disabled_when": "—"
+    },
+    {
+      "control": "Show [10/25/50] entries",
+      "kind": "Select",
+      "outcome": "Wired to nothing",
+      "goes_to": "—",
+      "who_may": "—",
+      "disabled_when": "—"
+    },
+    {
+      "control": "Previous / 1 / Next",
+      "kind": "Pager",
+      "outcome": "Wired to nothing; Previous/Next disabled",
+      "goes_to": "—",
+      "who_may": "—",
+      "disabled_when": "always"
+    },
+    {
+      "control": "Owner modal: × / Cancel",
+      "kind": "Buttons",
+      "outcome": "Close and discard",
+      "goes_to": "SCR-11",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-11-03)",
+      "disabled_when": "—"
+    },
+    {
+      "control": "Owner modal: Save",
+      "kind": "Button (green)",
+      "outcome": "Validates both fields; on failure shows messages and focuses the first bad field. On success trims, Add appends {owner, description}, Edit overwrites; re-renders the table and refreshes Owner selects everywhere; closes; toast Owner \"{owner}\" added successfully. / Owner \"{owner}\" updated successfully.",
+      "goes_to": "SCR-11",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-11-03)",
+      "disabled_when": "Never disabled"
+    },
+    {
+      "control": "Esc / backdrop click",
+      "kind": "Keyboard / pointer",
+      "outcome": "Closes modal, discards",
+      "goes_to": "SCR-11",
+      "who_may": "—",
+      "disabled_when": "—"
+    }
+  ],
+  "validation": [
+    {
+      "field": "Owner (owner-name)",
+      "rule": "Required; trimmed; min 1, max 60 characters (maxlength=\"60\")",
+      "status": "required: declared (data-req); max: declared attribute, unlabelled on screen; min 1 implied",
+      "when": "blur, Save",
+      "message": "Owner is required."
+    },
+    {
+      "field": "Owner uniqueness",
+      "rule": "Case-insensitive unique",
+      "status": "PROPOSED",
+      "when": "Save",
+      "message": "\"An owner with this name already exists.\" (PROPOSED wording)"
+    },
+    {
+      "field": "Description (owner-desc)",
+      "rule": "Required; trimmed; min 1, max 150 (maxlength=\"150\")",
+      "status": "required: declared; max: declared attribute",
+      "when": "blur, Save",
+      "message": "Description is required."
+    },
+    {
+      "field": "Both",
+      "rule": "< > stripped as typed",
+      "status": "declared (global filter)",
+      "when": "input",
+      "message": "silent"
+    },
+    {
+      "field": "Search owners (search input)",
+      "rule": "Free text, min 0, max 100 characters; empty shows all rows. Shell-level rule owned by SCR-10",
+      "status": "PROPOSED",
+      "when": "input",
+      "message": "none"
+    },
+    {
+      "field": "Show 10 25 50 entries (page-size select)",
+      "rule": "One of 10, 25, 50; default 10; no effect today",
+      "status": "declared (select options); behaviour OQ-11-04",
+      "when": "change",
+      "message": "none"
+    }
+  ],
+  "states": [
+    {
+      "state": "Populated",
+      "when": "at least one owner",
+      "shows": "rows, info line Showing 1 to N of N entries"
+    },
+    {
+      "state": "Empty",
+      "when": "all owners deleted",
+      "shows": "Undefined — OQ-11-02. Code renders an empty body and \"Showing 1 to 0 of 0 entries\""
+    },
+    {
+      "state": "Loading / Error",
+      "when": "—",
+      "shows": "none exist (in-memory)"
+    },
+    {
+      "state": "Permission denied",
+      "when": "—",
+      "shows": "Undefined — OQ-11-03"
+    },
+    {
+      "state": "Narrow viewport",
+      "when": "content area narrower than the 40 rem table min width",
+      "shows": "Not captured as a picture (capture is 1440 only). Measured with Playwright: the table scrolls inside .table-wrap up to about 728 px viewport width and again from 1024 to about 1052 px; it fits at 768 px and from about 1053 px up"
+    }
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "ST-SCR-11-01",
+      "title": "List loads",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "I choose Category Management > Owners"
+        },
+        {
+          "keyword": "Then",
+          "text": "one row reads \"1 Police Polices\" and the info line reads \"Showing 1 to 1 of 1 entries\""
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-11-02",
+      "title": "Add owner",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "the Add Owner modal is open"
+        },
+        {
+          "keyword": "When",
+          "text": "I enter \"Transport Authority\" / \"Licensing body\" and press Save"
+        },
+        {
+          "keyword": "Then",
+          "text": "row 2 appears, the toast reads Owner \"Transport Authority\" added successfully., and SCR-10's Owner select now offers it"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-11-03",
+      "title": "Empty submit",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "Add Owner is open and blank"
+        },
+        {
+          "keyword": "When",
+          "text": "I press Save"
+        },
+        {
+          "keyword": "Then",
+          "text": "\"Owner is required.\" and \"Description is required.\" show and focus is on Owner"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-11-04",
+      "title": "Edit",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "I press ✎ on Police"
+        },
+        {
+          "keyword": "Then",
+          "text": "the modal title is \"Edit Owner\" with Owner \"Police\" and Description \"Polices\""
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-11-05",
+      "title": "Delete cancelled",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "I press 🗑 on Police and the confirm reads Delete owner \"Police\"?"
+        },
+        {
+          "keyword": "When",
+          "text": "I choose Cancel"
+        },
+        {
+          "keyword": "Then",
+          "text": "the row stays"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-11-06",
+      "title": "Delete leaves dangling owner",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "category \"Over-charging fares\" has owner Police"
+        },
+        {
+          "keyword": "When",
+          "text": "I delete Police and confirm"
+        },
+        {
+          "keyword": "Then",
+          "text": "the owners table is empty and SCR-10 still shows \"Police\" in row 1 (finding OQ-11-06)"
+        }
+      ]
+    }
+  ],
+  "open_questions": [],
+  "capture": {
+    "controls": 0,
+    "dead_controls": 0,
+    "tables": 0,
+    "stat_tiles": 0,
+    "role_variants": [],
+    "forms": 0
+  }
+}

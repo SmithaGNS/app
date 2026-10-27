@@ -10,7 +10,7 @@ This workspace holds 2 repos built by the setup-project plugin's AI development 
 
 | Repo | Side | Stack | Build order |
 | ---- | ---- | ----- | ----------- |
-| backend | backend | NestJS · PostgreSQL · Prisma · JWT | 1 |
+| backend | backend | NestJS · MySQL · Prisma · JWT | 1 |
 | frontend | frontend | React · Vite · Tailwind + shadcn/ui | 2 |
 
 ## Workspace Folders

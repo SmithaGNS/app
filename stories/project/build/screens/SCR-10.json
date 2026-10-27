@@ -1,0 +1,482 @@
+{
+  "generated_by": {
+    "plugin": "ux-prototype-to-screen-stories",
+    "version": "3.4.0",
+    "generator": "build_pack.py"
+  },
+  "screen_id": "SCR-10",
+  "screen_name": "Category management",
+  "route": "#category (section id=category; go('category'))",
+  "module": "Catalogue",
+  "nav_label": "Category",
+  "priority": "must",
+  "derived": false,
+  "actors": [
+    "Signed-in portal user"
+  ],
+  "story": "screen-stories/03-catalogue/SCR-10-category-list.md",
+  "screenshots": [
+    "screen-stories/screenshots/category.png",
+    "screen-stories/screenshots/modal-cat-add.png",
+    "screen-stories/screenshots/modal-cat-add-invalid.png",
+    "screen-stories/screenshots/modal-cat-edit.png"
+  ],
+  "embedded_images": [
+    "screen-stories/screenshots/category.png",
+    "screen-stories/screenshots/category.png",
+    "screen-stories/screenshots/modal-cat-add.png",
+    "screen-stories/screenshots/modal-cat-add-invalid.png",
+    "screen-stories/screenshots/modal-cat-edit.png"
+  ],
+  "actions": [
+    {
+      "control": "Search categories…",
+      "kind": "Search input (data-filter=\"cat-body\")",
+      "outcome": "On every keystroke (and on the native clear ✕) hides every row whose combined cell text does not contain the text, case-insensitive substring. Matches across all columns including Owner. Does not touch data",
+      "goes_to": "—",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-10-03)",
+      "disabled_when": "—"
+    },
+    {
+      "control": "CSV",
+      "kind": "Button",
+      "outcome": "Wired to nothing (no handler, no data-action)",
+      "goes_to": "—",
+      "who_may": "—",
+      "disabled_when": "—"
+    },
+    {
+      "control": "Excel",
+      "kind": "Button",
+      "outcome": "Wired to nothing",
+      "goes_to": "—",
+      "who_may": "—",
+      "disabled_when": "—"
+    },
+    {
+      "control": "Print",
+      "kind": "Button",
+      "outcome": "Wired to nothing",
+      "goes_to": "—",
+      "who_may": "—",
+      "disabled_when": "—"
+    },
+    {
+      "control": "＋ Add Category",
+      "kind": "Button (primary, green)",
+      "outcome": "Resets the form, refreshes the Owner options from the current owners list, sets title \"Add Category\", opens modal; focus lands on the first focusable element (the × close button)",
+      "goes_to": "modal cat-modal (add)",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-10-03)",
+      "disabled_when": "—"
+    },
+    {
+      "control": "✎ Edit {name} (row; aria-label \"Edit {name}\")",
+      "kind": "Icon button",
+      "outcome": "Opens cat-modal titled \"Edit Category\" filled with that row's name, description and owner. If the row's owner has since been deleted in SCR-11, the Owner select (options: only \"No owner\") shows empty with no option selected (selectedIndex -1, value \"\"); pressing Save then writes owner \"\" and so silently blanks the category's owner (OQ-11-06)",
+      "goes_to": "modal cat-modal (edit)",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-10-03)",
+      "disabled_when": "—"
+    },
+    {
+      "control": "🗑 Delete {name} (row; aria-label \"Delete {name}\")",
+      "kind": "Icon button",
+      "outcome": "Asks Delete category \"{name}\"? via confirm(). OK removes the category from the list permanently (no undo, no toast), re-renders this table and the violations list; Cancel does nothing. Violations already filed under that category keep the old category name text, and their Owner column becomes \"-\"",
+      "goes_to": "native confirm",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-10-03)",
+      "disabled_when": "—"
+    },
+    {
+      "control": "Show [10/25/50] entries",
+      "kind": "Select",
+      "outcome": "Options 10, 25, 50. Wired to nothing: changing it changes no rows (all rows always render)",
+      "goes_to": "—",
+      "who_may": "—",
+      "disabled_when": "—"
+    },
+    {
+      "control": "Previous / 1 / Next",
+      "kind": "Pager buttons",
+      "outcome": "Wired to nothing. Previous and Next are disabled; 1 is the current page. Only one page exists",
+      "goes_to": "—",
+      "who_may": "—",
+      "disabled_when": "Previous/Next always disabled"
+    },
+    {
+      "control": "Cat modal: × (aria-label \"Close dialog\")",
+      "kind": "Icon button",
+      "outcome": "Closes modal, discards entries, returns focus to the control that opened it",
+      "goes_to": "SCR-10",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-10-03)",
+      "disabled_when": "—"
+    },
+    {
+      "control": "Cat modal: Cancel",
+      "kind": "Button (grey)",
+      "outcome": "Same as ×: closes, discards",
+      "goes_to": "SCR-10",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-10-03)",
+      "disabled_when": "—"
+    },
+    {
+      "control": "Cat modal: Save",
+      "kind": "Button (green)",
+      "outcome": "Runs validation of every field. If any fails: shows the messages, focuses the first bad field, modal stays. If valid: trims name and description, Add appends {name, description, owner} to the list, Edit overwrites that row; re-renders this table AND the violations list (owner column derives from category); closes the modal; success toast Category \"{name}\" added successfully. or Category \"{name}\" updated successfully. (auto-dismiss after 3.5 s, also read by the polite live region)",
+      "goes_to": "SCR-10",
+      "who_may": "any signed-in user (prototype enforces nothing; Administrator-only is PROPOSED, OQ-10-03)",
+      "disabled_when": "Never disabled. Save is always enabled; validity is checked on click (unlike Add User and App User modals, whose Save is disabled until valid)"
+    },
+    {
+      "control": "Esc key / click on dark backdrop",
+      "kind": "Keyboard / pointer",
+      "outcome": "Closes the open modal, discarding entries",
+      "goes_to": "SCR-10",
+      "who_may": "—",
+      "disabled_when": "—"
+    },
+    {
+      "control": "1",
+      "kind": "Edit Over-charging fares",
+      "outcome": "Delete Over-charging fares",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "2",
+      "kind": "Edit Over Crowding",
+      "outcome": "Delete Over Crowding",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "3",
+      "kind": "Edit Other",
+      "outcome": "Delete Other",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "4",
+      "kind": "Edit Stunt riding",
+      "outcome": "Delete Stunt riding",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "5",
+      "kind": "Edit Breaking traffic signal",
+      "outcome": "Delete Breaking traffic signal",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "6",
+      "kind": "Edit Wrong parking",
+      "outcome": "Delete Wrong parking",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "7",
+      "kind": "Edit Using mobile phone while driving",
+      "outcome": "Delete Using mobile phone while driving",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "8",
+      "kind": "Edit Breaking One way/No Entry",
+      "outcome": "Delete Breaking One way/No Entry",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "9",
+      "kind": "Edit Speeding",
+      "outcome": "Delete Speeding",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "10",
+      "kind": "Edit Improper Over taking",
+      "outcome": "Delete Improper Over taking",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "CSV, Excel, Print",
+      "kind": "Unbuilt scope signalled by the toolbar",
+      "outcome": "OQ-10-04",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "Show 10/25/50 select",
+      "kind": "Unbuilt, no handler",
+      "outcome": "OQ-10-04",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    },
+    {
+      "control": "Previous, 1, Next",
+      "kind": "Unbuilt; with Previous/Next permanently disabled and one page only",
+      "outcome": "OQ-10-04",
+      "goes_to": "",
+      "who_may": "",
+      "disabled_when": ""
+    }
+  ],
+  "validation": [
+    {
+      "field": "Category name (cat-name)",
+      "rule": "Required; trimmed; min 1, max 60 characters (hard maxlength=\"60\", the screen hint says \"Max 60 chars\" with a PROPOSED badge)",
+      "status": "PROPOSED",
+      "when": "blur, on Save; error clears when typing",
+      "message": "Category name is required."
+    },
+    {
+      "field": "Category name uniqueness",
+      "rule": "Case-insensitive unique among categories",
+      "status": "PROPOSED",
+      "when": "on Save",
+      "message": "\"A category with this name already exists.\" (PROPOSED wording)"
+    },
+    {
+      "field": "Category name characters",
+      "rule": "< and > are stripped as typed",
+      "status": "declared (global input filter)",
+      "when": "on input",
+      "message": "silent"
+    },
+    {
+      "field": "Description (cat-desc)",
+      "rule": "Required; trimmed; min 1, max 150 characters (maxlength=\"150\"; no hint on screen)",
+      "status": "required: declared; max 150: declared attribute; min 1: implied",
+      "when": "blur, on Save",
+      "message": "Description is required."
+    },
+    {
+      "field": "Owner (cat-owner)",
+      "rule": "Optional single select; value is \"\" (label \"No owner\") or the name of an existing owner at open time",
+      "status": "declared (select)",
+      "when": "—",
+      "message": "—"
+    },
+    {
+      "field": "Search categories (search input)",
+      "rule": "Free text, min 0, max 100 characters; empty shows all rows. Shell-level list-search rule, stated once here and cited by SCR-11 and SCR-13; SCR-20/21 also use 100 (OQ-10-10)",
+      "status": "PROPOSED",
+      "when": "on input",
+      "message": "none"
+    },
+    {
+      "field": "Show 10 25 50 entries (page-size select)",
+      "rule": "One of 10, 25, 50; default 10; no effect today",
+      "status": "declared (select options); behaviour OQ-10-04",
+      "when": "on change",
+      "message": "none"
+    }
+  ],
+  "states": [
+    {
+      "state": "Populated",
+      "when": "CATEGORIES has rows",
+      "shows": "Table of 10 seeded rows, info line Showing 1 to N of N entries"
+    },
+    {
+      "state": "Empty",
+      "when": "Every category deleted",
+      "shows": "Undefined — OQ-10-02. The code renders an empty tbody and \"Showing 1 to 0 of 0 entries\"; no empty-state message"
+    },
+    {
+      "state": "Loading",
+      "when": "—",
+      "shows": "None; data is in-memory. Raised in OQ-10-02"
+    },
+    {
+      "state": "Error",
+      "when": "—",
+      "shows": "None; no failure path exists in the prototype"
+    },
+    {
+      "state": "Permission denied",
+      "when": "—",
+      "shows": "None; Undefined — OQ-10-03"
+    },
+    {
+      "state": "Search no match",
+      "when": "Search text matches no row",
+      "shows": "All rows hidden (CSS class), table header stays, info line unchanged (not recounted)"
+    },
+    {
+      "state": "Narrow viewport",
+      "when": "content area narrower than the table's 40 rem min width",
+      "shows": "Not captured as a picture (capture is 1440x900 only). Measured with Playwright: the table scrolls horizontally inside .table-wrap at viewport widths up to about 728 px (at 390 px: 640 px of table in a 300 px wrapper) and again from 1024 to about 1052 px, where the permanent sidebar narrows the content area; it fits at 768 px and from about 1053 px up (1280: fits). The sidebar is an off-canvas drawer below 1024 px"
+    }
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "ST-SCR-10-01",
+      "title": "List loads",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "I am signed in"
+        },
+        {
+          "keyword": "When",
+          "text": "I choose Category Management > Category"
+        },
+        {
+          "keyword": "Then",
+          "text": "the table lists 10 rows starting \"1 Over-charging fares · Over-charging of fares · Police\""
+        },
+        {
+          "keyword": "And",
+          "text": "the info line reads \"Showing 1 to 10 of 10 entries\" and the Category link is highlighted"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-10-02",
+      "title": "Add category",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "the Add Category modal is open"
+        },
+        {
+          "keyword": "When",
+          "text": "I enter name \"Tailgating\", description \"Following too closely\", Owner \"No owner\" and press Save"
+        },
+        {
+          "keyword": "Then",
+          "text": "the modal closes, row 11 \"Tailgating\" appears last, the info line reads \"Showing 1 to 11 of 11 entries\""
+        },
+        {
+          "keyword": "And",
+          "text": "a toast reads Category \"Tailgating\" added successfully."
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-10-03",
+      "title": "Empty submit blocked",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "the Add Category modal is open and both fields are blank"
+        },
+        {
+          "keyword": "When",
+          "text": "I press Save"
+        },
+        {
+          "keyword": "Then",
+          "text": "\"Category name is required.\" and \"Description is required.\" appear, both fields get a red ring, focus is on Category name, and no row is added"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-10-04",
+      "title": "Edit with owner",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "I press ✎ on row 1"
+        },
+        {
+          "keyword": "When",
+          "text": "the modal opens"
+        },
+        {
+          "keyword": "Then",
+          "text": "the title is \"Edit Category\", name reads \"Over-charging fares\" and Owner reads \"Police\""
+        },
+        {
+          "keyword": "And",
+          "text": "changing Owner to \"No owner\" and pressing Save blanks the Owner cell of row 1 and shows Category \"Over-charging fares\" updated successfully."
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-10-05",
+      "title": "Delete confirm",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "I press 🗑 on row 2 \"Over Crowding\""
+        },
+        {
+          "keyword": "When",
+          "text": "the confirm reads Delete category \"Over Crowding\"? and I choose Cancel"
+        },
+        {
+          "keyword": "Then",
+          "text": "10 rows remain"
+        },
+        {
+          "keyword": "And",
+          "text": "choosing OK instead removes the row, renumbers S No and shows \"of 9 entries\""
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-10-06",
+      "title": "Search",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "the list shows 10 rows"
+        },
+        {
+          "keyword": "When",
+          "text": "I type \"police\" in the search box"
+        },
+        {
+          "keyword": "Then",
+          "text": "only row 1 is visible"
+        }
+      ]
+    },
+    {
+      "id": "ST-SCR-10-07",
+      "title": "Escape closes modal",
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "a category modal is open with typed text"
+        },
+        {
+          "keyword": "When",
+          "text": "I press Esc"
+        },
+        {
+          "keyword": "Then",
+          "text": "the modal closes and nothing is saved"
+        }
+      ]
+    }
+  ],
+  "open_questions": [],
+  "capture": {
+    "controls": 0,
+    "dead_controls": 0,
+    "tables": 0,
+    "stat_tiles": 0,
+    "role_variants": [],
+    "forms": 0
+  }
+}

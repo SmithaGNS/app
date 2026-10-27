@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DriveSafe — Admin Portal</title>
+
+<!-- App-wide font -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- Tailwind Play CDN (prototype). For production, compile with the Tailwind CLI. -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      // Custom responsive breakpoints — mobile-first through 4K
+      screens: {
+        sm: "640px", md: "768px", lg: "1024px",
+        xl: "1280px", "2xl": "1536px", "3xl": "1920px", "4xl": "2560px",
+      },
+      extend: {
+        colors: {
+          brand: { DEFAULT: "#2f44d6", dark: "#2535b0" },
+          side:  { DEFAULT: "#222d32", dark: "#1a2226", hover: "#1e282c", text: "#b8c7ce" },
+          accent: "#f6c511",
+          canvas: "#eef0fb",
+        },
+        fontFamily: { sans: ['"Public Sans"', "Segoe UI", "Roboto", "Helvetica", "Arial", "sans-serif"] },
+        borderRadius: { card: "6px", pill: "40px" },
+        boxShadow: { card: "0 1px 2px rgba(0,0,0,.08)", pop: "0 12px 34px rgba(0,0,0,.28)" },
+        maxWidth: { "screen-3xl": "1800px", "screen-4xl": "2240px" },
+      },
+    },
+  };
+</script>
+
+<!-- Component layer: keeps markup class-only (no inline styles) -->
+<style type="text/tailwindcss">
+  @layer base {
+    body { @apply bg-canvas font-sans text-gray-800 antialiased; }
+  }
+  @layer components {
+    .focus-ring { @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-1; }
+    .card  { @apply mb-4 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm md:mb-5 md:p-5 3xl:mb-6 3xl:p-6; }
+    .cell  { @apply whitespace-pre-line border-b border-gray-100 px-2.5 py-2.5 align-top text-gray-700 md:px-3 3xl:py-3; }
+    .th    { @apply cursor-pointer whitespace-nowrap border-b-2 border-gray-200 px-2.5 py-2.5 text-left font-bold text-gray-700 md:px-3; }
+    .btn   { @apply inline-flex items-center justify-center gap-2 rounded px-3 py-1.5 text-xs font-medium text-white bg-brand hover:brightness-110 focus-ring disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100; }
+    .btn-primary { @apply bg-sky-600 px-4 py-2 text-sm hover:bg-sky-700; }
+    .btn-green   { @apply bg-green-600 px-4 py-2 text-sm hover:bg-green-700; }
+    .btn-grey    { @apply bg-slate-400 px-4 py-2 text-sm hover:bg-slate-500; }
+    .btn-red     { @apply bg-red-600 px-4 py-2 text-sm hover:bg-red-700; }
+    .btn-add     { @apply border border-gray-300 bg-white text-sm text-gray-700 hover:bg-gray-50; }
+    .btn-soft    { @apply border border-gray-300 bg-white text-gray-600 hover:bg-gray-50; }
+    .btn-create  { @apply gap-1 whitespace-nowrap bg-green-600 px-4 text-sm font-semibold hover:bg-green-700; }
+    .label { @apply mb-1.5 block text-sm font-semibold text-gray-600; }
+    .input { @apply w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-800 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand; }
+    .field { @apply mb-4; }
+    .req-star { @apply text-red-500; }
+    .err { @apply mt-1 text-xs text-red-500; }
+    .input-invalid { @apply border-red-400 ring-1 ring-red-400; }
+    .alert-error { @apply rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700; }
+    .otp-box { @apply h-12 min-w-0 flex-1 rounded-lg border border-gray-300 bg-white text-center text-xl font-semibold text-gray-800 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand; }
+    .nav-link { @apply flex cursor-pointer items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium text-white/80 transition-all hover:bg-white/10 hover:text-white focus-ring; }
+    .nav-active { @apply bg-white text-gray-800 shadow-sm hover:bg-white hover:text-gray-800; }
+    .kpi-card { @apply flex items-center gap-3 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-ring 3xl:p-5; }
+    .kpi-chip { @apply flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-2xl 3xl:h-14 3xl:w-14; }
+    .kpi-num  { @apply block text-2xl font-bold leading-none text-gray-800 3xl:text-3xl; }
+    .kpi-label { @apply mt-1 block truncate text-xs text-gray-500 md:text-sm; }
+    .pill { @apply inline-block rounded-full border border-gray-200 bg-white px-3 py-1 text-xs md:text-sm; }
+    .h1 { @apply text-xl font-medium md:text-2xl 3xl:text-3xl; }
+    .crumb { @apply text-xs text-gray-400 md:text-sm; }
+    .table-wrap { @apply overflow-x-auto; }
+    .ctl-bar { @apply mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between; }
+    .toolbar { @apply mb-4 flex flex-col gap-3 sm:flex-row sm:items-center; }
+    .search-box { @apply relative sm:flex-1; }
+    .search-ic { @apply pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400; }
+    .proposed { @apply ml-1.5 rounded border border-amber-300 bg-amber-50 px-1.5 text-[11px] font-normal text-brand; }
+    /* amber-learn style modal shell */
+    .modal { @apply fixed inset-0 z-50 hidden items-center justify-center overflow-y-auto bg-black/50 p-4; }
+    .modal-card { @apply my-auto flex max-h-[90vh] w-full flex-col rounded-2xl bg-white p-6 shadow-xl; }
+    .modal-head { @apply flex shrink-0 items-center justify-between pb-4; }
+    .modal-title { @apply text-xl font-semibold text-gray-800; }
+    .modal-close { @apply flex h-8 w-8 items-center justify-center rounded-full text-2xl leading-none text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500 focus-ring; }
+    .modal-divider { @apply -mx-6 shrink-0 border-t border-gray-200; }
+    .modal-body { @apply -mx-6 min-h-0 flex-1 overflow-y-auto px-6 pt-5; }
+    .modal-foot { @apply -mx-6 mt-5 flex shrink-0 justify-center gap-3 border-t border-gray-200 px-6 pt-4; }
+  }
+  @layer utilities {
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  }
+</style>
+</head>
+
+<body class="h-full">
+<a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-50 focus:rounded focus:bg-sky-700 focus:px-3 focus:py-2 focus:text-white">Skip to content</a>
+<div id="live-region" class="sr-only" role="status" aria-live="polite"></div>
+<div id="toast-container" class="pointer-events-none fixed right-4 top-4 z-[60] flex w-80 max-w-[calc(100vw-2rem)] flex-col gap-2"></div>
+
+<!-- ================= LOGIN ================= -->
+<section id="login" class="hidden min-h-screen">
+  <div class="flex min-h-screen flex-col lg:flex-row">
+
+    <!-- LEFT: branded illustration panel (hidden on mobile) -->
+    <div class="relative hidden overflow-hidden bg-gradient-to-br from-brand to-brand-dark p-12 text-white lg:flex lg:w-1/2 lg:flex-col lg:items-center lg:justify-center">
+      <div class="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-white/10"></div>
+      <div class="pointer-events-none absolute -bottom-28 -right-20 h-96 w-96 rounded-full bg-black/10"></div>
+
+      <svg viewBox="0 0 400 300" class="relative mb-8 w-80 max-w-full" role="img" aria-label="Road safety illustration">
+        <circle cx="330" cy="55" r="26" fill="#fff4cc"/>
+        <g stroke="#fff4cc" stroke-width="3" stroke-linecap="round">
+          <line x1="330" y1="14" x2="330" y2="2"/><line x1="330" y1="108" x2="330" y2="96"/>
+          <line x1="289" y1="55" x2="277" y2="55"/><line x1="383" y1="55" x2="371" y2="55"/>
+          <line x1="301" y1="26" x2="292" y2="17"/><line x1="368" y1="93" x2="359" y2="84"/>
+          <line x1="359" y1="26" x2="368" y2="17"/><line x1="292" y1="93" x2="301" y2="84"/>
+        </g>
+        <ellipse cx="200" cy="292" rx="210" ry="40" fill="#ffffff" opacity="0.10"/>
+        <path d="M150 300 L250 300 L212 70 L188 70 Z" fill="#2b2f42"/>
+        <g fill="#f4d000">
+          <rect x="196" y="250" width="8" height="26" rx="3"/>
+          <rect x="197.5" y="200" width="7" height="22" rx="3"/>
+          <rect x="198.5" y="158" width="6" height="18" rx="3"/>
+          <rect x="199" y="124" width="5" height="15" rx="3"/>
+          <rect x="199.4" y="96" width="4.2" height="12" rx="2"/>
+        </g>
+        <g transform="translate(96 150)">
+          <path d="M32 2 L60 12 V40 C60 60 48 72 32 78 C16 72 4 60 4 40 V12 Z" fill="#ffffff"/>
+          <path d="M18 40 l10 10 l20 -24" fill="none" stroke="#2e9f5e" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+        </g>
+        <g fill="#2e9f5e"><circle cx="300" cy="235" r="20"/><rect x="297" y="250" width="6" height="22"/></g>
+        <g fill="#3bbd74"><circle cx="330" cy="248" r="14"/><rect x="327" y="258" width="5" height="16"/></g>
+      </svg>
+
+      <h2 class="relative text-3xl font-extrabold tracking-tight 3xl:text-4xl">Drive Safe</h2>
+      <p class="relative mt-2 text-xs font-semibold uppercase tracking-[0.2em] text-white/80">Safer Roads • Brighter Jamaica</p>
+      <p class="relative mt-5 max-w-sm text-center text-sm leading-relaxed text-white/90">
+        Jamaica's road-safety reporting platform — review citizen-submitted violations, manage categories and users, and keep the roads safer.
+      </p>
+    </div>
+
+    <!-- RIGHT: login form -->
+    <div class="flex flex-1 flex-col items-center justify-center bg-white px-6 py-12 sm:px-12 lg:px-16">
+      <form class="w-full max-w-sm 3xl:max-w-md" onsubmit="return false">
+        <div class="mb-8 flex items-center gap-3">
+          <img src="assets/ministry-logo-100.png" alt="Jamaica coat of arms" class="h-12 w-12 shrink-0 object-contain">
+          <div>
+            <p class="text-base font-bold leading-tight text-gray-800">Admin Portal</p>
+            <p class="badge-name text-xs text-gray-500">Ministry of Transport and Mining</p>
+          </div>
+        </div>
+
+        <h1 class="text-2xl font-bold text-gray-800">Welcome back</h1>
+        <p class="mt-1 text-sm text-gray-500">Sign in to continue to your dashboard.</p>
+
+        <div class="mt-8 space-y-4">
+          <div>
+            <label for="lg-user" class="label">Username</label>
+            <input id="lg-user" class="input" placeholder="Enter your username" autocomplete="username">
+          </div>
+          <div>
+            <label for="lg-pass" class="label">Password</label>
+            <input id="lg-pass" type="password" class="input" placeholder="Enter your password" autocomplete="current-password">
+          </div>
+        </div>
+
+        <div class="mt-3 text-right">
+          <button type="button" data-go="forgot" class="text-sm font-semibold text-brand hover:underline focus-ring">Forgot Password?</button>
+        </div>
+
+        <button type="button" data-action="login" aria-label="Sign in" class="mt-5 w-full rounded-lg bg-accent py-3 text-base font-bold text-gray-900 hover:brightness-95 focus-ring">LOGIN</button>
+
+        <p class="mt-4 text-center text-xs leading-snug text-gray-400">Protected by reCAPTCHA&nbsp;v3 — verification runs invisibly, no checkbox needed.</p>
+
+        <div class="mt-8 flex items-center justify-between border-t border-gray-100 pt-5 text-xs text-gray-400">
+          <button type="button" data-action="feedback-open" class="font-semibold text-brand hover:underline focus-ring">Feedback</button>
+          <span>&copy; 2026. All rights reserved.</span>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</section>
+
+<!-- ================= FORGOT PASSWORD ================= -->
+<section id="forgot" class="hidden min-h-screen">
+  <div class="flex min-h-screen flex-col lg:flex-row">
+    <div class="relative hidden overflow-hidden bg-gradient-to-br from-brand to-brand-dark p-12 text-white lg:flex lg:w-1/2 lg:flex-col lg:items-center lg:justify-center">
+      <div class="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-white/10"></div>
+      <div class="pointer-events-none absolute -bottom-28 -right-20 h-96 w-96 rounded-full bg-black/10"></div>
+      <svg viewBox="0 0 400 300" class="relative mb-8 w-80 max-w-full" role="img" aria-label="Road safety illustration">
+        <circle cx="330" cy="55" r="26" fill="#fff4cc"/>
+        <g stroke="#fff4cc" stroke-width="3" stroke-linecap="round"><line x1="330" y1="14" x2="330" y2="2"/><line x1="330" y1="108" x2="330" y2="96"/><line x1="289" y1="55" x2="277" y2="55"/><line x1="383" y1="55" x2="371" y2="55"/><line x1="301" y1="26" x2="292" y2="17"/><line x1="368" y1="93" x2="359" y2="84"/><line x1="359" y1="26" x2="368" y2="17"/><line x1="292" y1="93" x2="301" y2="84"/></g>
+        <ellipse cx="200" cy="292" rx="210" ry="40" fill="#ffffff" opacity="0.10"/>
+        <path d="M150 300 L250 300 L212 70 L188 70 Z" fill="#2b2f42"/>
+        <g fill="#f4d000"><rect x="196" y="250" width="8" height="26" rx="3"/><rect x="197.5" y="200" width="7" height="22" rx="3"/><rect x="198.5" y="158" width="6" height="18" rx="3"/><rect x="199" y="124" width="5" height="15" rx="3"/><rect x="199.4" y="96" width="4.2" height="12" rx="2"/></g>
+        <g transform="translate(96 150)"><path d="M32 2 L60 12 V40 C60 60 48 72 32 78 C16 72 4 60 4 40 V12 Z" fill="#ffffff"/><path d="M18 40 l10 10 l20 -24" fill="none" stroke="#2e9f5e" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></g>
+        <g fill="#2e9f5e"><circle cx="300" cy="235" r="20"/><rect x="297" y="250" width="6" height="22"/></g>
+        <g fill="#3bbd74"><circle cx="330" cy="248" r="14"/><rect x="327" y="258" width="5" height="16"/></g>
+      </svg>
+      <h2 class="relative text-3xl font-extrabold tracking-tight 3xl:text-4xl">Drive Safe</h2>
+      <p class="relative mt-2 text-xs font-semibold uppercase tracking-[0.2em] text-white/80">Safer Roads • Brighter Jamaica</p>
+      <p class="relative mt-5 max-w-sm text-center text-sm leading-relaxed text-white/90">Jamaica's road-safety reporting platform — review citizen-submitted violations, manage categories and users, and keep the roads safer.</p>
+    </div>
+
+    <div class="flex flex-1 flex-col items-center justify-center bg-white px-6 py-12 sm:px-12 lg:px-16">
+      <div class="w-full max-w-sm 3xl:max-w-md">
+        <div class="mb-8 flex items-center gap-3">
+          <img src="assets/ministry-logo-100.png" alt="Jamaica coat of arms" class="h-12 w-12 shrink-0 object-contain">
+          <div><p class="text-base font-bold leading-tight text-gray-800">Admin Portal</p><p class="badge-name text-xs text-gray-500">Ministry of Transport and Mining</p></div>
+        </div>
+
+        <form id="forgot-form" onsubmit="return false">
+          <h1 class="text-2xl font-bold text-gray-800">Reset your password</h1>
+          <p class="mt-1 text-sm text-gray-500">Enter the email tied to your account and we'll send a 6-digit verification code.</p>
+          <div class="mt-6">
+            <label for="fp-email" class="label">Email address</label>
+            <input id="fp-email" type="email" data-req data-label="Email" aria-required="true" aria-describedby="err-fp-email" class="input" placeholder="Enter your email" autocomplete="email">
+            <p id="err-fp-email" class="err"></p>
+          </div>
+          <button type="button" data-action="forgot-send" class="mt-6 w-full rounded-lg bg-accent py-3 text-base font-bold text-gray-900 hover:brightness-95 focus-ring">Send code</button>
+          <button type="button" data-go="login" class="mt-4 block text-sm font-semibold text-brand hover:underline focus-ring">← Back to sign in</button>
+        </form>
+
+        <div id="forgot-sent" class="hidden text-center" role="status">
+          <div class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-green-100 text-3xl text-green-600" aria-hidden="true">✓</div>
+          <h2 class="text-xl font-bold text-gray-800">Check your email</h2>
+          <p class="mt-2 text-sm leading-relaxed text-gray-600">If an account exists for <b id="fp-echo"></b>, a password reset link has been sent. The link expires in 30 minutes.</p>
+          <button type="button" data-go="login" class="btn btn-primary mt-5">Back to sign in</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= VERIFY OTP ================= -->
+<section id="otp" class="hidden min-h-screen">
+  <div class="flex min-h-screen flex-col lg:flex-row">
+    <div class="relative hidden overflow-hidden bg-gradient-to-br from-brand to-brand-dark p-12 text-white lg:flex lg:w-1/2 lg:flex-col lg:items-center lg:justify-center">
+      <div class="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-white/10"></div>
+      <div class="pointer-events-none absolute -bottom-28 -right-20 h-96 w-96 rounded-full bg-black/10"></div>
+      <svg viewBox="0 0 400 300" class="relative mb-8 w-80 max-w-full" role="img" aria-label="Road safety illustration">
+        <circle cx="330" cy="55" r="26" fill="#fff4cc"/>
+        <g stroke="#fff4cc" stroke-width="3" stroke-linecap="round"><line x1="330" y1="14" x2="330" y2="2"/><line x1="330" y1="108" x2="330" y2="96"/><line x1="289" y1="55" x2="277" y2="55"/><line x1="383" y1="55" x2="371" y2="55"/><line x1="301" y1="26" x2="292" y2="17"/><line x1="368" y1="93" x2="359" y2="84"/><line x1="359" y1="26" x2="368" y2="17"/><line x1="292" y1="93" x2="301" y2="84"/></g>
+        <ellipse cx="200" cy="292" rx="210" ry="40" fill="#ffffff" opacity="0.10"/>
+        <path d="M150 300 L250 300 L212 70 L188 70 Z" fill="#2b2f42"/>
+        <g fill="#f4d000"><rect x="196" y="250" width="8" height="26" rx="3"/><rect x="197.5" y="200" width="7" height="22" rx="3"/><rect x="198.5" y="158" width="6" height="18" rx="3"/><rect x="199" y="124" width="5" height="15" rx="3"/><rect x="199.4" y="96" width="4.2" height="12" rx="2"/></g>
+        <g transform="translate(96 150)"><path d="M32 2 L60 12 V40 C60 60 48 72 32 78 C16 72 4 60 4 40 V12 Z" fill="#ffffff"/><path d="M18 40 l10 10 l20 -24" fill="none" stroke="#2e9f5e" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></g>
+        <g fill="#2e9f5e"><circle cx="300" cy="235" r="20"/><rect x="297" y="250" width="6" height="22"/></g>
+        <g fill="#3bbd74"><circle cx="330" cy="248" r="14"/><rect x="327" y="258" width="5" height="16"/></g>
+      </svg>
+      <h2 class="relative text-3xl font-extrabold tracking-tight 3xl:text-4xl">Drive Safe</h2>
+      <p class="relative mt-2 text-xs font-semibold uppercase tracking-[0.2em] text-white/80">Safer Roads • Brighter Jamaica</p>
+      <p class="relative mt-5 max-w-sm text-center text-sm leading-relaxed text-white/90">Jamaica's road-safety reporting platform — review citizen-submitted violations, manage categories and users, and keep the roads safer.</p>
+    </div>
+
+    <div class="flex flex-1 flex-col items-center justify-center bg-white px-6 py-12 sm:px-12 lg:px-16">
+      <div class="w-full max-w-sm 3xl:max-w-md">
+        <div class="mb-8 flex items-center gap-3">
+          <img src="assets/ministry-logo-100.png" alt="Jamaica coat of arms" class="h-12 w-12 shrink-0 object-contain">
+          <div><p class="text-base font-bold leading-tight text-gray-800">Admin Portal</p><p class="badge-name text-xs text-gray-500">Ministry of Transport and Mining</p></div>
+        </div>
+
+        <form id="otp-form" onsubmit="return false">
+          <h1 class="text-2xl font-bold text-gray-800">Verify your identity</h1>
+          <p class="mt-1 text-sm text-gray-500">Enter the 6-digit code sent to <b id="otp-echo" class="text-gray-700"></b>.</p>
+          <div id="otp-inputs" class="mt-6 flex gap-2" role="group" aria-label="One-time passcode, 6 digits">
+            <input class="otp-box" inputmode="numeric" maxlength="1" autocomplete="one-time-code" aria-label="Digit 1">
+            <input class="otp-box" inputmode="numeric" maxlength="1" aria-label="Digit 2">
+            <input class="otp-box" inputmode="numeric" maxlength="1" aria-label="Digit 3">
+            <input class="otp-box" inputmode="numeric" maxlength="1" aria-label="Digit 4">
+            <input class="otp-box" inputmode="numeric" maxlength="1" aria-label="Digit 5">
+            <input class="otp-box" inputmode="numeric" maxlength="1" aria-label="Digit 6">
+          </div>
+          <p id="err-otp" class="err" role="alert"></p>
+          <button type="button" data-action="otp-verify" class="mt-6 w-full rounded-lg bg-accent py-3 text-base font-bold text-gray-900 hover:brightness-95 focus-ring">Verify</button>
+          <p class="mt-4 text-sm text-gray-500">Didn't get it?
+            <button type="button" id="otp-resend" data-action="otp-resend" class="font-semibold text-brand hover:underline disabled:cursor-not-allowed disabled:no-underline disabled:opacity-60 focus-ring">Resend code</button>
+            <span id="otp-timer" class="text-gray-400"></span></p>
+          <button type="button" id="otp-back" data-go="forgot" class="mt-4 block text-sm font-semibold text-brand hover:underline focus-ring">← Change email</button>
+        </form>
+
+        <div id="otp-done" class="hidden text-center" role="status">
+          <div class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-green-100 text-3xl text-green-600" aria-hidden="true">✓</div>
+          <h2 class="text-xl font-bold text-gray-800">Identity verified</h2>
+          <p class="mt-2 text-sm leading-relaxed text-gray-600">A password reset link has been sent to <b id="otp-echo2"></b>. The link expires in 30 minutes.</p>
+          <button type="button" data-go="login" class="btn btn-primary mt-5">Back to sign in</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- reCAPTCHA v3 badge (shown on auth screens; v3 injects this in production) -->
+<div id="grecaptcha-badge" class="fixed bottom-4 right-4 z-50 hidden items-center gap-2 rounded bg-white px-3 py-2 text-[10px] leading-tight text-gray-500 shadow-pop">
+  <span class="text-2xl text-[#4285f4]" aria-hidden="true">♲</span>
+  <span>protected by <b>reCAPTCHA</b><br><span class="text-gray-400">Privacy · Terms</span></span>
+</div>
+
+<!-- ================= APP SHELL ================= -->
+<div id="shell" class="hidden">
+  <!-- Header -->
+  <header class="fixed inset-x-0 top-0 z-40 flex h-14 items-center bg-brand text-white">
+    <div class="flex h-14 w-auto items-center gap-2 bg-brand-dark px-4 text-xl font-bold lg:w-60">
+      <img src="assets/ministry-logo-100.png" alt="Jamaica coat of arms" class="h-9 w-9 shrink-0 object-contain">
+      <span>DriveSafe</span>
+    </div>
+    <button id="menu-btn" data-action="menu-open" aria-controls="sidebar" aria-expanded="false" aria-label="Open navigation menu"
+      class="px-4 text-xl focus-ring lg:hidden">☰</button>
+    <div class="flex-1"></div>
+    <div class="relative">
+      <button id="user-menu-btn" data-action="user-menu" aria-haspopup="true" aria-expanded="false" aria-controls="user-menu"
+        class="flex items-center gap-2 px-4 py-2 focus-ring">
+        <span class="flex h-7 w-7 items-center justify-center rounded-full bg-white text-xs text-brand">AA</span>
+        <span class="hidden sm:inline">Admin Admin</span>
+        <span class="text-xs" aria-hidden="true">▾</span>
+      </button>
+      <div id="user-menu" role="menu" aria-label="Account" class="absolute right-2 top-12 z-50 hidden w-52 overflow-hidden rounded-card bg-white py-1 text-gray-700 shadow-pop">
+        <div class="border-b border-gray-100 px-4 py-2 text-xs text-gray-400">Signed in as<br><b class="text-gray-700">Admin Admin</b></div>
+        <button role="menuitem" data-action="profile" class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm hover:bg-gray-50 focus-ring"><span aria-hidden="true">👤</span> Profile</button>
+        <button role="menuitem" data-action="logout-confirm" class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 focus-ring"><span aria-hidden="true">🚪</span> Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Body: floating-card layout -->
+  <div class="fixed inset-x-0 bottom-0 top-14 flex gap-3 bg-[#eaeff4] p-3 md:gap-4 md:p-4">
+
+    <!-- Sidebar: rounded gradient card with profile + white-pill nav -->
+    <aside id="sidebar" aria-label="Main navigation"
+      class="fixed bottom-4 left-3 top-[4.25rem] z-40 flex w-[260px] -translate-x-full flex-col overflow-hidden rounded-3xl bg-side shadow-lg transition-transform duration-200 lg:static lg:translate-x-0 lg:shadow-none">
+      <!-- Profile card -->
+      <button type="button" data-action="profile" title="Open my profile"
+        class="mx-2 mt-2 flex shrink-0 items-center gap-2.5 rounded-2xl border border-white/20 bg-white/[0.18] px-3 py-3 text-left backdrop-blur transition-colors hover:bg-white/[0.28] focus-ring">
+        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-sm font-bold text-brand">AA</span>
+        <span class="min-w-0 flex-1">
+          <span class="block truncate text-[15px] font-bold leading-tight text-white">Admin Admin</span>
+          <span class="mt-0.5 block truncate text-[11px] font-semibold text-white/60">Administrator</span>
+        </span>
+        <span class="shrink-0 text-lg text-white/50" aria-hidden="true">›</span>
+      </button>
+      <div class="mx-5 mb-2 mt-3 shrink-0 border-t border-white/10"></div>
+      <!-- Nav -->
+      <nav class="no-scrollbar flex-1 space-y-1 overflow-y-auto px-2 pb-3">
+        <a id="nav-dashboard"  class="nav-link" data-go="dashboard"><span aria-hidden="true">📊</span> Dashboard</a>
+        <a id="nav-violations" class="nav-link" data-go="violations"><span aria-hidden="true">📄</span> <span class="flex-1 truncate">Manage Violation Uploads</span>
+          <span id="pending-badge" class="hidden rounded-full bg-red-500 px-2 text-[11px] text-white">0</span></a>
+        <button id="nav-cm" data-action="cm-toggle" aria-expanded="false" aria-controls="cm-sub" class="nav-link w-full text-left">
+          <span aria-hidden="true">⚙️</span> <span class="flex-1">Category Management</span>
+          <span id="cm-caret" class="text-[11px] transition-transform">▶</span></button>
+        <div id="cm-sub" class="ml-4 hidden space-y-0.5 border-l border-dashed border-white/30 pl-3">
+          <a id="nav-category" class="nav-link py-1.5" data-go="category">Category</a>
+          <a id="nav-owners"   class="nav-link py-1.5" data-go="owners">Owners</a>
+        </div>
+        <a id="nav-contact"    class="nav-link" data-go="contact"><span aria-hidden="true">💬</span> Manage Contact Us</a>
+        <button id="nav-um" data-action="um-toggle" aria-expanded="false" aria-controls="um-sub" class="nav-link w-full text-left">
+          <span aria-hidden="true">👥</span> <span class="flex-1">User Management</span>
+          <span id="um-caret" class="text-[11px] transition-transform">▶</span></button>
+        <div id="um-sub" class="ml-4 hidden space-y-0.5 border-l border-dashed border-white/30 pl-3">
+          <a id="nav-users"    class="nav-link py-1.5" data-go="users">Admin user List</a>
+          <a id="nav-appusers" class="nav-link py-1.5" data-go="appusers">App user List</a>
+        </div>
+        <button id="nav-st" data-action="st-toggle" aria-expanded="false" aria-controls="st-sub" class="nav-link w-full text-left">
+          <span aria-hidden="true">🛠️</span> <span class="flex-1">Settings</span>
+          <span id="st-caret" class="text-[11px] transition-transform">▶</span></button>
+        <div id="st-sub" class="ml-4 hidden space-y-0.5 border-l border-dashed border-white/30 pl-3">
+          <a id="nav-config"   class="nav-link py-1.5" data-go="config">Config</a>
+        </div>
+      </nav>
+    </aside>
+    <div id="backdrop" class="fixed inset-0 top-14 z-30 hidden bg-black/40 lg:hidden"></div>
+
+    <!-- Content: one big white rounded panel that scrolls -->
+    <main id="main-content" class="min-w-0 flex-1 overflow-y-auto rounded-3xl bg-white">
+      <div class="mx-auto w-full max-w-screen-2xl px-4 py-5 md:px-6 lg:px-8 xl:px-10 3xl:max-w-screen-3xl 3xl:px-12 4xl:max-w-screen-4xl 4xl:px-20">
+
+      <!-- DASHBOARD -->
+      <section id="dashboard" class="screen hidden">
+        <div class="mb-4 flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
+          <h1 class="h1">Dashboard <span class="text-sm text-gray-400">Overview</span></h1>
+          <nav aria-label="Breadcrumb" class="crumb">Home › Dashboard</nav>
+        </div>
+        <div class="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4 4xl:grid-cols-8">
+          <a class="kpi-card border-l-4 border-l-brand" data-go="violations"><span class="kpi-chip bg-brand/10 text-brand" aria-hidden="true">📄</span><span class="min-w-0 flex-1"><span class="kpi-num" id="k-total">0</span><span class="kpi-label">Violation reports</span></span></a>
+          <a class="kpi-card border-l-4 border-l-accent" data-go="violations"><span class="kpi-chip bg-accent/20 text-amber-700" aria-hidden="true">⏳</span><span class="min-w-0 flex-1"><span class="kpi-num" id="k-pending">0</span><span class="kpi-label">Pending review</span></span></a>
+          <a class="kpi-card border-l-4 border-l-brand" data-go="violations"><span class="kpi-chip bg-brand/10 text-brand" aria-hidden="true">✅</span><span class="min-w-0 flex-1"><span class="kpi-num" id="k-verified">0</span><span class="kpi-label">Verified</span></span></a>
+          <a class="kpi-card border-l-4 border-l-accent" data-go="violations"><span class="kpi-chip bg-accent/20 text-amber-700" aria-hidden="true">❌</span><span class="min-w-0 flex-1"><span class="kpi-num" id="k-rejected">0</span><span class="kpi-label">Rejected</span></span></a>
+          <a class="kpi-card border-l-4 border-l-brand" data-go="category"><span class="kpi-chip bg-brand/10 text-brand" aria-hidden="true">⚙️</span><span class="min-w-0 flex-1"><span class="kpi-num">10</span><span class="kpi-label">Categories</span></span></a>
+          <a class="kpi-card border-l-4 border-l-accent" data-go="appusers"><span class="kpi-chip bg-accent/20 text-amber-700" aria-hidden="true">📱</span><span class="min-w-0 flex-1"><span class="kpi-num">3,123</span><span class="kpi-label">App users</span></span></a>
+          <a class="kpi-card border-l-4 border-l-brand" data-go="users"><span class="kpi-chip bg-brand/10 text-brand" aria-hidden="true">👤</span><span class="min-w-0 flex-1"><span class="kpi-num">8</span><span class="kpi-label">Portal users</span></span></a>
+          <a class="kpi-card border-l-4 border-l-accent" data-go="contact"><span class="kpi-chip bg-accent/20 text-amber-700" aria-hidden="true">💬</span><span class="min-w-0 flex-1"><span class="kpi-num">24</span><span class="kpi-label">Messages</span></span></a>
+        </div>
+
+        <div class="card mt-5">
+          <div class="mb-3 flex items-center justify-between"><h2 class="text-lg font-medium">Report review funnel</h2><span class="hidden text-sm text-gray-400 sm:inline">left → right</span></div>
+          <ol class="grid grid-cols-2 gap-3 md:grid-cols-5">
+            <li class="rounded-card border border-gray-200 bg-slate-50 p-3 text-center"><div class="text-2xl font-bold" id="f-sub">23</div><div class="text-xs text-gray-500">Submitted</div></li>
+            <li class="rounded-card border border-gray-200 bg-slate-50 p-3 text-center"><div class="text-2xl font-bold" id="f-pend">23</div><div class="text-xs text-gray-500">Pending</div></li>
+            <li class="rounded-card border border-gray-200 bg-slate-50 p-3 text-center"><div class="text-2xl font-bold" id="f-rev">0</div><div class="text-xs text-gray-500">Under review</div></li>
+            <li class="rounded-card border border-gray-200 bg-slate-50 p-3 text-center"><div class="text-2xl font-bold" id="f-ver">0</div><div class="text-xs text-gray-500">Verified</div></li>
+            <li class="rounded-card border border-gray-200 bg-slate-50 p-3 text-center"><div class="text-2xl font-bold" id="f-rej">0</div><div class="text-xs text-gray-500">Rejected</div></li>
+          </ol>
+          <p class="mt-3 text-sm leading-relaxed text-gray-600">A citizen submits a violation with photo/video from the mobile app → it lands here as <b>Pending</b> → a Violation Manager opens it, moves it to <b>Under review</b>, then <b>Verifies</b> or <b>Rejects</b> it. Verifying awards the reporter reward points.</p>
+        </div>
+
+        <div class="card">
+          <div class="mb-3 flex items-center justify-between"><h2 class="text-lg font-medium">Latest violation reports</h2><button class="btn" data-go="violations">View all</button></div>
+          <div class="table-wrap"><table class="w-full min-w-[46rem] text-sm"><caption class="sr-only">Latest violation reports</caption>
+            <thead><tr><th scope="col" class="th">S No</th><th scope="col" class="th">Mobile</th><th scope="col" class="th">Category</th><th scope="col" class="th">Location</th><th scope="col" class="th">Created At</th><th scope="col" class="th">Status</th><th scope="col" class="th">Option</th></tr></thead>
+            <tbody id="dash-body"></tbody>
+          </table></div>
+        </div>
+      </section>
+
+      <!-- VIOLATIONS -->
+      <section id="violations" class="screen hidden">
+        <div class="mb-4 flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
+          <h1 class="h1">User uploaded Violations <span class="text-sm text-gray-400">Management</span></h1>
+          <nav aria-label="Breadcrumb" class="crumb">Home › User uploaded Violations Management</nav>
+        </div>
+        <div class="card">
+          <h2 class="mb-3 text-lg font-medium">List of User uploaded Violations</h2>
+          <!-- filter row -->
+          <div class="mb-4 flex flex-col gap-3 rounded-lg border border-gray-100 bg-gray-50 p-3 sm:flex-row sm:flex-wrap sm:items-end">
+            <div><label class="label" for="vf-owner">Category Owner</label>
+              <select id="vf-owner" class="input sm:w-48"><option value="">All Category Owners</option></select></div>
+            <div><label class="label" for="vf-from">Created From</label>
+              <input id="vf-from" type="date" class="input sm:w-44"></div>
+            <div><label class="label" for="vf-to">Created To</label>
+              <input id="vf-to" type="date" class="input sm:w-44"></div>
+            <div class="flex gap-2">
+              <button class="btn" data-action="viol-filter">Filter</button>
+              <button class="btn btn-grey" data-action="viol-reset">Reset</button>
+            </div>
+          </div>
+          <div class="toolbar">
+            <div class="search-box">
+              <svg class="search-ic" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"/></svg>
+              <input type="search" data-filter="viol-body" aria-label="Search violations" placeholder="Search violations…" class="input pl-10">
+            </div>
+            <div class="flex items-center gap-1 sm:ml-auto">
+              <button class="btn btn-soft">CSV</button><button class="btn btn-soft">Excel</button><button class="btn btn-soft">Print</button>
+            </div>
+          </div>
+          <div class="table-wrap"><table class="w-full min-w-[72rem] text-sm"><caption class="sr-only">User uploaded violations</caption>
+            <thead><tr>
+              <th scope="col" class="th">S No</th><th scope="col" class="th">Mobile</th><th scope="col" class="th">Vehicle Type</th>
+              <th scope="col" class="th">Category</th><th scope="col" class="th">Category Owner</th><th scope="col" class="th">Other Description</th><th scope="col" class="th">Location</th>
+              <th scope="col" class="th">Notes</th><th scope="col" class="th">Registration No</th><th scope="col" class="th">Created At</th>
+              <th scope="col" class="th">Status</th><th scope="col" class="th">Level</th><th scope="col" class="th">Status Updated By</th><th scope="col" class="th">Option</th>
+            </tr></thead>
+            <tbody id="viol-body"></tbody>
+          </table></div>
+          <div class="mt-3 grid grid-cols-1 items-center gap-3 sm:grid-cols-3">
+            <p class="text-sm text-gray-500 sm:text-left" id="viol-info">Showing 1 to 10 of 23 entries</p>
+            <label class="flex items-center justify-center gap-1 whitespace-nowrap text-sm text-gray-500">Show <select class="input !w-auto"><option>10</option><option>25</option><option>50</option><option>100</option></select> entries</label>
+            <nav aria-label="Pagination" class="flex justify-center gap-1 sm:justify-end">
+              <button class="rounded border border-gray-200 px-3 py-1.5 text-xs focus-ring">Previous</button>
+              <button class="rounded border border-sky-600 bg-sky-600 px-3 py-1.5 text-xs text-white" aria-current="page">1</button>
+              <button class="rounded border border-gray-200 px-3 py-1.5 text-xs focus-ring">2</button>
+              <button class="rounded border border-gray-200 px-3 py-1.5 text-xs focus-ring">3</button>
+              <button class="rounded border border-gray-200 px-3 py-1.5 text-xs focus-ring">Next</button>
+            </nav>
+          </div>
+        </div>
+      </section>
+
+      <!-- CATEGORY -->
+      <section id="category" class="screen hidden">
+        <div class="mb-4 flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
+          <h1 class="h1">Category <span class="text-sm text-gray-400">Management</span></h1>
+          <nav aria-label="Breadcrumb" class="crumb">Home › Category Management</nav>
+        </div>
+        <div class="card">
+          <h2 class="mb-3 text-lg font-medium">List of Category</h2>
+          <div class="toolbar">
+            <div class="search-box">
+              <svg class="search-ic" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"/></svg>
+              <input type="search" data-filter="cat-body" aria-label="Search categories" placeholder="Search categories…" class="input pl-10">
+            </div>
+            <div class="flex items-center gap-1 sm:ml-auto">
+              <button class="btn btn-soft">CSV</button><button class="btn btn-soft">Excel</button><button class="btn btn-soft">Print</button>
+              <button class="btn btn-create" data-action="cat-add">＋ Add Category</button>
+            </div>
+          </div>
+          <div class="table-wrap"><table class="w-full min-w-[40rem] text-sm"><caption class="sr-only">Violation categories</caption>
+            <thead><tr><th scope="col" class="th">S No</th><th scope="col" class="th">Category</th><th scope="col" class="th">Description</th><th scope="col" class="th">Owner</th><th scope="col" class="th">Option</th></tr></thead>
+            <tbody id="cat-body"></tbody>
+          </table></div>
+          <div class="mt-3 grid grid-cols-1 items-center gap-3 sm:grid-cols-3">
+            <p class="text-sm text-gray-500 sm:text-left" id="cat-info">Showing 1 to 10 of 10 entries</p>
+            <label class="flex items-center justify-center gap-1 whitespace-nowrap text-sm text-gray-500">Show <select class="input !w-auto"><option>10</option><option>25</option><option>50</option></select> entries</label>
+            <nav aria-label="Pagination" class="flex justify-center gap-1 sm:justify-end">
+              <button class="rounded border border-gray-200 px-3 py-1.5 text-xs text-gray-400" disabled>Previous</button>
+              <button class="rounded border border-sky-600 bg-sky-600 px-3 py-1.5 text-xs text-white" aria-current="page">1</button>
+              <button class="rounded border border-gray-200 px-3 py-1.5 text-xs text-gray-400" disabled>Next</button>
+            </nav>
+          </div>
+        </div>
+      </section>
+
+      <!-- OWNERS -->
+      <section id="owners" class="screen hidden">
+        <div class="mb-4 flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
+          <h1 class="h1">Owner <span class="text-sm text-gray-400">Management</span></h1>
+          <nav aria-label="Breadcrumb" class="crumb">Home › Category Management › Owners</nav>
+        </div>
+        <div class="card">
+          <h2 class="mb-3 text-lg font-medium">List of Owners</h2>
+          <div class="toolbar">
+            <div class="search-box">
+              <svg class="search-ic" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"/></svg>
+              <input type="search" data-filter="owner-body" aria-label="Search owners" placeholder="Search owners…" class="input pl-10">
+            </div>
+            <div class="flex items-center gap-1 sm:ml-auto">
+              <button class="btn btn-soft">CSV</button><button class="btn btn-soft">Excel</button><button class="btn btn-soft">Print</button>
+              <button class="btn btn-create" data-action="owner-add">＋ Add Owner</button>
+            </div>
+          </div>
+          <div class="table-wrap"><table class="w-full min-w-[40rem] text-sm"><caption class="sr-only">Category owners</caption>
+            <thead><tr><th scope="col" class="th">S No</th><th scope="col" class="th">Owner</th><th scope="col" class="th">Description</th><th scope="col" class="th">Option</th></tr></thead>
+            <tbody id="owner-body"></tbody>
+          </table></div>
+          <div class="mt-3 grid grid-cols-1 items-center gap-3 sm:grid-cols-3">
+            <p class="text-sm text-gray-500 sm:text-left" id="owner-info">Showing 1 to 1 of 1 entries</p>
+            <label class="flex items-center justify-center gap-1 whitespace-nowrap text-sm text-gray-500">Show <select class="input !w-auto"><option>10</option><option>25</option><option>50</option></select> entries</label>
+            <nav aria-label="Pagination" class="flex justify-center gap-1 sm:justify-end">
+              <button class="rounded border border-gray-200 px-3 py-1.5 text-xs text-gray-400" disabled>Previous</button>
+              <button class="rounded border border-sky-600 bg-sky-600 px-3 py-1.5 text-xs text-white" aria-current="page">1</button>
+              <button class="rounded border border-gray-200 px-3 py-1.5 text-xs text-gray-400" disabled>Next</button>
+            </nav>
+          </div>
+        </div>
+      </section>
+
+      <!-- CONFIG -->
+      <section id="config" class="screen hidden">
+        <div class="mb-4 flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
+          <h1 class="h1">Config <span class="text-sm text-gray-400">Settings</span></h1>
+          <nav aria-label="Breadcrumb" class="crumb">Home › Settings › Config</nav>
+        </div>
+        <div class="card max-w-xl">
+          <h2 class="mb-4 text-lg font-medium">Config</h2>
+          <form onsubmit="return false">
+            <div class="field">
+              <label class="label" for="cfg-badge">Badge Name</label>
+              <input id="cfg-badge" class="input" value="Ministry of Transport and Mining" data-label="Badge Name">
+            </div>
+            <button class="btn" data-action="config-save">Update</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- CONTACT -->
+      <section id="contact" class="screen hidden">
+        <div class="mb-4 flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
+          <h1 class="h1">User ContactUs <span class="text-sm text-gray-400">Management</span></h1>
+          <nav aria-label="Breadcrumb" class="crumb">Home › User ContactUs Management</nav>
+        </div>
+        <div class="card">
+          <h2 class="mb-3 text-lg font-medium">List of User ContactUs</h2>
+          <div class="toolbar">
+            <div class="search-box">
+              <svg class="search-ic" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"/></svg>
+              <input type="search" data-filter="contact-body" aria-label="Search messages" placeholder="Search messages…" class="input pl-10">
+            </div>
+            <div class="flex items-center gap-1 sm:ml-auto">
+              <button class="btn btn-soft">CSV</button><button class="btn btn-soft">Excel</button><button class="btn btn-soft">Print</button>
+            </div>
+          </div>
+          <div class="table-wrap"><table class="w-full min-w-[54rem] text-sm"><caption class="sr-only">Contact messages</caption>
+            <thead><tr><th scope="col" class="th">S No</th><th scope="col" class="th">Name</th><th scope="col" class="th">Email</th><th scope="col" class="th">Message</th><th scope="col" class="th">Created At</th><th scope="col" class="th">Response</th><th scope="col" class="th">Replied At</th><th scope="col" class="th">Option</th></tr></thead>
+            <tbody id="contact-body"></tbody>
+          </table></div>
+          <div class="mt-3 grid grid-cols-1 items-center gap-3 sm:grid-cols-3">
+            <p class="text-sm text-gray-500 sm:text-left">Showing 1 to 10 of 24 entries</p>
+            <label class="flex items-center justify-center gap-1 whitespace-nowrap text-sm text-gray-500">Show <select class="input !w-auto"><option>10</option><option>25</option><option>50</option></select> entries</label>
+            <nav aria-label="Pagination" class="flex justify-center gap-1 sm:justify-end">
+              <button class="rounded border border-gray-200 px-3 py-1.5 text-xs text-gray-400" disabled>Previous</button>
+              <button class="rounded border border-sky-600 bg-sky-600 px-3 py-1.5 text-xs text-white" aria-current="page">1</button>
+              <button class="rounded border border-gray-200 px-3 py-1.5 text-xs focus-ring">2</button>
+              <button class="rounded border border-gray-200 px-3 py-1.5 text-xs focus-ring">3</button>
+              <button class="rounded border border-gray-200 px-3 py-1.5 text-xs focus-ring">Next</button>
+            </nav>
+          </div>
+        </div>
+      </section>
+
+      <!-- ADMIN USERS -->
+      <section id="users" class="screen hidden">
+        <div class="mb-4 flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
+          <h1 class="h1">User <span class="text-sm text-gray-400">Management</span></h1>
+          <nav aria-label="Breadcrumb" class="crumb">Home › User Management</nav>
+        </div>
+        <div class="card">
+          <h2 class="mb-3 text-lg font-medium">List of Users</h2>
+          <div class="toolbar">
+            <div class="search-box">
+              <svg class="search-ic" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"/></svg>
+              <input type="search" data-filter="users-body" aria-label="Search users" placeholder="Search users…" class="input pl-10">
+            </div>
+            <div class="flex items-center gap-1 sm:ml-auto">
+              <button class="btn btn-soft">CSV</button><button class="btn btn-soft">Excel</button><button class="btn btn-soft">Print</button>
+              <button class="btn btn-create" data-action="user-add">＋ Add User</button>
+            </div>
+          </div>
+          <div class="table-wrap"><table class="w-full min-w-[60rem] text-sm"><caption class="sr-only">Portal users</caption>
+            <thead><tr><th scope="col" class="th">S No</th><th scope="col" class="th">First Name</th><th scope="col" class="th">Last Name</th><th scope="col" class="th">Email</th><th scope="col" class="th">Phone No</th><th scope="col" class="th">Address</th><th scope="col" class="th">Role</th><th scope="col" class="th">Level</th><th scope="col" class="th">Option</th></tr></thead>
+            <tbody id="users-body"></tbody>
+          </table></div>
+          <div class="mt-3 grid grid-cols-1 items-center gap-3 sm:grid-cols-3">
+            <p class="text-sm text-gray-500 sm:text-left" id="users-info">Showing 1 to 8 of 8 entries</p>
+            <label class="flex items-center justify-center gap-1 whitespace-nowrap text-sm text-gray-500">Show <select class="input !w-auto"><option>10</option><option>25</option></select> entries</label>
+            <nav aria-label="Pagination" class="flex justify-center gap-1 sm:justify-end">
+              <button class="rounded border border-gray-200 px-3 py-1.5 text-xs text-gray-400" disabled>Previous</button>
+              <button class="rounded border border-sky-600 bg-sky-600 px-3 py-1.5 text-xs text-white" aria-current="page">1</button>
+              <button class="rounded border border-gray-200 px-3 py-1.5 text-xs text-gray-400" disabled>Next</button>
+            </nav>
+          </div>
+        </div>
+      </section>
+
+      <!-- APP USERS -->
+      <section id="appusers" class="screen hidden">
+        <div class="mb-4 flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
+          <h1 class="h1">App User <span class="text-sm text-gray-400">Management</span></h1>
+          <nav aria-label="Breadcrumb" class="crumb">Home › App User Management</nav>
+        </div>
+        <div class="card">
+          <h2 class="mb-3 text-lg font-medium">List of App Users</h2>
+          <div class="toolbar">
+            <div class="search-box">
+              <svg class="search-ic" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"/></svg>
+              <input type="search" data-filter="appusers-body" aria-label="Search app users" placeholder="Search app users…" class="input pl-10">
+            </div>
+            <div class="flex items-center gap-1 sm:ml-auto">
+              <button class="btn btn-soft">CSV</button><button class="btn btn-soft">Excel</button><button class="btn btn-soft">Print</button>
+              <button class="btn btn-create" data-action="app-add">＋ Add App User</button>
+            </div>
+          </div>
+          <div class="table-wrap"><table class="w-full min-w-[60rem] text-sm"><caption class="sr-only">App users</caption>
+            <thead><tr><th scope="col" class="th">S No</th><th scope="col" class="th">First Name</th><th scope="col" class="th">Last Name</th><th scope="col" class="th">Email</th><th scope="col" class="th">Phone No</th><th scope="col" class="th">Address</th><th scope="col" class="th">Earner Points</th><th scope="col" class="th">Reedemed Points</th><th scope="col" class="th">Option</th></tr></thead>
+            <tbody id="appusers-body"></tbody>
+          </table></div>
+          <div class="mt-3 grid grid-cols-1 items-center gap-3 sm:grid-cols-3">
+            <p class="text-sm text-gray-500 sm:text-left" id="appusers-info">Showing 1 to 10 of 3,123 entries</p>
+            <label class="flex items-center justify-center gap-1 whitespace-nowrap text-sm text-gray-500">Show <select class="input !w-auto"><option>10</option><option>25</option><option>50</option><option>100</option></select> entries</label>
+            <nav aria-label="Pagination" class="flex flex-wrap justify-center gap-1 sm:justify-end">
+              <button class="rounded border border-gray-200 px-3 py-1.5 text-xs focus-ring">Previous</button>
+              <button class="rounded border border-sky-600 bg-sky-600 px-3 py-1.5 text-xs text-white" aria-current="page">1</button>
+              <button class="rounded border border-gray-200 px-3 py-1.5 text-xs focus-ring">2</button>
+              <button class="rounded border border-gray-200 px-3 py-1.5 text-xs focus-ring">3</button>
+              <button class="rounded border border-gray-200 px-3 py-1.5 text-xs focus-ring">…</button>
+              <button class="rounded border border-gray-200 px-3 py-1.5 text-xs focus-ring">313</button>
+              <button class="rounded border border-gray-200 px-3 py-1.5 text-xs focus-ring">Next</button>
+            </nav>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- PROFILE -->
+      <section id="profile" class="screen hidden">
+        <div class="mb-4 flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
+          <h1 class="h1">My Profile <span class="text-sm text-gray-400">Account</span></h1>
+          <nav aria-label="Breadcrumb" class="crumb">Home › Profile</nav>
+        </div>
+        <div class="grid grid-cols-1 gap-4 lg:grid-cols-3 3xl:gap-6">
+          <!-- Basic details -->
+          <div class="card lg:col-span-1">
+            <div class="flex flex-col items-center text-center">
+              <div class="flex h-20 w-20 items-center justify-center rounded-full bg-brand text-2xl font-bold text-white">AA</div>
+              <h2 class="mt-3 text-lg font-semibold text-gray-800">Admin Admin</h2>
+              <p class="text-sm text-gray-500">Administrator</p>
+              <span class="mt-2 inline-block rounded-full bg-green-100 px-3 py-0.5 text-xs font-semibold text-green-700">Active</span>
+            </div>
+            <dl class="mt-6 space-y-3 text-sm">
+              <div class="flex items-start justify-between gap-3 border-b border-gray-100 pb-2"><dt class="text-gray-500">Email</dt><dd class="text-right font-medium text-gray-700">itdept@ta.org.jm</dd></div>
+              <div class="flex items-start justify-between gap-3 border-b border-gray-100 pb-2"><dt class="text-gray-500">Phone</dt><dd class="text-right font-medium text-gray-700">+1 876 555 0100</dd></div>
+              <div class="flex items-start justify-between gap-3 border-b border-gray-100 pb-2"><dt class="text-gray-500">Role</dt><dd class="text-right font-medium text-gray-700">Administrator</dd></div>
+              <div class="flex items-start justify-between gap-3 border-b border-gray-100 pb-2"><dt class="text-gray-500">Level</dt><dd class="text-right font-medium text-gray-700">—</dd></div>
+              <div class="flex items-start justify-between gap-3"><dt class="text-gray-500">Last login</dt><dd class="text-right font-medium text-gray-700">2026-10-22 16:08</dd></div>
+            </dl>
+          </div>
+
+          <!-- Change password -->
+          <div class="card lg:col-span-2">
+            <h2 class="text-lg font-semibold text-gray-800">Change password</h2>
+            <p class="mt-1 text-sm text-gray-500">Choose a strong password. Fields marked <span class="req-star">*</span> are required.</p>
+
+            <form onsubmit="return false" class="mt-6 max-w-md space-y-6">
+              <!-- Current -->
+              <div class="space-y-1">
+                <label class="block text-sm font-semibold text-gray-700" for="cp-current">Current password <span class="req-star" aria-hidden="true">*</span></label>
+                <div class="relative">
+                  <input id="cp-current" type="password" class="input pr-11" autocomplete="current-password" aria-describedby="err-cp-current">
+                  <button type="button" data-pw-toggle="cp-current" aria-label="Show password" aria-pressed="false" class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-700 focus-ring">👁</button>
+                </div>
+                <p id="err-cp-current" class="err"></p>
+              </div>
+
+              <!-- New -->
+              <div class="space-y-1">
+                <label class="block text-sm font-semibold text-gray-700" for="cp-new">New password <span class="req-star" aria-hidden="true">*</span></label>
+                <div class="relative">
+                  <input id="cp-new" type="password" class="input pr-11" autocomplete="new-password" aria-describedby="err-cp-new">
+                  <button type="button" data-pw-toggle="cp-new" aria-label="Show password" aria-pressed="false" class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-700 focus-ring">👁</button>
+                </div>
+                <p id="err-cp-new" class="err"></p>
+                <!-- strength meter + requirements matrix -->
+                <div class="mt-2">
+                  <div class="flex items-center gap-2">
+                    <div id="pw-meter" class="flex h-1.5 flex-1 gap-1" aria-hidden="true">
+                      <div class="h-full flex-1 rounded-full bg-gray-200"></div>
+                      <div class="h-full flex-1 rounded-full bg-gray-200"></div>
+                      <div class="h-full flex-1 rounded-full bg-gray-200"></div>
+                      <div class="h-full flex-1 rounded-full bg-gray-200"></div>
+                    </div>
+                    <span id="pw-strength-label" class="w-16 text-right text-xs font-medium text-gray-500" aria-live="polite"></span>
+                  </div>
+                  <ul id="pw-rules" class="mt-2 grid grid-cols-1 gap-x-4 gap-y-1 text-xs sm:grid-cols-2"></ul>
+                  <p id="pw-toolong" class="mt-1 text-xs text-red-500" hidden>Maximum 128 characters.</p>
+                </div>
+              </div>
+
+              <!-- Confirm -->
+              <div class="space-y-1">
+                <label class="block text-sm font-semibold text-gray-700" for="cp-confirm">Confirm new password <span class="req-star" aria-hidden="true">*</span></label>
+                <div class="relative">
+                  <input id="cp-confirm" type="password" class="input pr-11" autocomplete="new-password" aria-describedby="err-cp-confirm">
+                  <button type="button" data-pw-toggle="cp-confirm" aria-label="Show password" aria-pressed="false" class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-700 focus-ring">👁</button>
+                </div>
+                <p id="err-cp-confirm" class="err"></p>
+              </div>
+
+              <div class="flex gap-2 pt-1">
+                <button class="btn btn-green" data-action="save-change-password">Update password</button>
+                <button class="btn btn-grey" data-go="dashboard">Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ================= MODALS ================= -->
+<div id="review-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="review-title">
+  <div class="modal-card max-w-2xl 3xl:max-w-3xl">
+    <div class="modal-head"><h2 id="review-title" class="modal-title">Violation Detail</h2><button class="modal-close" data-close="review-modal" aria-label="Close dialog">×</button></div>
+    <div class="modal-divider"></div>
+    <div class="modal-body">
+      <div class="mb-4 flex h-36 items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50 text-gray-400">📷&nbsp; Captured evidence (photo / video)</div>
+      <dl id="review-detail" class="text-sm"></dl>
+      <hr class="my-4 border-gray-100">
+      <h3 class="mb-2 text-sm font-semibold">Review this report</h3>
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div class="field"><label class="label" for="review-status">Status</label>
+          <select id="review-status" class="input"><option>Pending</option><option>Under review</option><option>Verified</option><option>Rejected</option></select></div>
+        <div class="field"><label class="label" for="review-level">Level <span class="proposed">severity 0–3</span></label>
+          <select id="review-level" class="input"><option>0</option><option>1</option><option>2</option><option>3</option></select></div>
+      </div>
+      <div class="field"><label class="label" for="review-note">Reviewer note</label><textarea id="review-note" rows="2" class="input" placeholder="Why this decision?"></textarea></div>
+      <p class="text-xs text-gray-400">Setting status to <b>Verified</b> credits reward points to the reporter (concept). <i>Status Updated By</i> is recorded as <b>Admin Admin</b>.</p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-grey" data-close="review-modal">Close</button>
+      <button class="btn btn-primary" data-action="save-review">Save review</button>
+    </div>
+  </div>
+</div>
+
+<div id="cat-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="cat-modal-title">
+  <div class="modal-card max-w-lg">
+    <div class="modal-head"><h2 id="cat-modal-title" class="modal-title">Add Category</h2><button class="modal-close" data-close="cat-modal" aria-label="Close dialog">×</button></div>
+    <div class="modal-divider"></div>
+    <div class="modal-body">
+      <p class="mb-4 text-xs text-gray-400">Fields marked <span class="req-star">*</span> are required.</p>
+      <div class="field"><label class="label" for="cat-name">Category name <span class="req-star" aria-hidden="true">*</span></label>
+        <input id="cat-name" maxlength="60" class="input" placeholder="e.g. Speeding" data-req data-label="Category name" aria-required="true" aria-describedby="err-cat-name"><p id="err-cat-name" class="err"></p>
+        <p class="mt-1 text-xs text-gray-400">Max 60 chars <span class="proposed">PROPOSED</span></p></div>
+      <div class="field"><label class="label" for="cat-desc">Description <span class="req-star" aria-hidden="true">*</span></label>
+        <textarea id="cat-desc" rows="3" maxlength="150" class="input" placeholder="Short description shown to reviewers" data-req data-label="Description" aria-required="true" aria-describedby="err-cat-desc"></textarea><p id="err-cat-desc" class="err"></p></div>
+      <div class="field"><label class="label" for="cat-owner">Owner</label>
+        <select id="cat-owner" class="input"><option value="">No owner</option></select></div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-grey" data-close="cat-modal">Cancel</button><button class="btn btn-green" data-action="save-cat">Save</button></div>
+  </div>
+</div>
+
+<div id="user-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="user-modal-title">
+  <div class="modal-card max-w-2xl">
+    <div class="modal-head"><h2 id="user-modal-title" class="modal-title">Add User</h2><button class="modal-close" data-close="user-modal" aria-label="Close dialog">×</button></div>
+    <div class="modal-divider"></div>
+    <div class="modal-body">
+      <p class="mb-4 text-xs text-gray-400">Fields marked <span class="req-star">*</span> are required.</p>
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div class="field"><label class="label" for="u-first">First Name <span class="req-star" aria-hidden="true">*</span></label>
+          <input id="u-first" class="input" data-req data-label="First Name" aria-required="true" aria-describedby="err-u-first"><p id="err-u-first" class="err"></p></div>
+        <div class="field"><label class="label" for="u-last">Last Name <span class="req-star" aria-hidden="true">*</span></label>
+          <input id="u-last" class="input" data-req data-label="Last Name" aria-required="true" aria-describedby="err-u-last"><p id="err-u-last" class="err"></p></div>
+        <div class="field"><label class="label" for="u-email">Email <span class="req-star" aria-hidden="true">*</span></label>
+          <input id="u-email" type="email" class="input" placeholder="name@ta.org.jm" data-req data-label="Email" aria-required="true" aria-describedby="err-u-email"><p id="err-u-email" class="err"></p></div>
+        <div class="field"><label class="label" for="u-phone">Phone No <span class="req-star" aria-hidden="true">*</span></label>
+          <input id="u-phone" class="input" inputmode="numeric" data-req data-label="Phone No" data-pattern="digits" aria-required="true" aria-describedby="err-u-phone"><p id="err-u-phone" class="err"></p></div>
+        <div class="field sm:col-span-2"><label class="label" for="u-addr">Address</label><input id="u-addr" class="input"></div>
+        <div class="field"><label class="label" for="u-role">Role <span class="req-star" aria-hidden="true">*</span></label>
+          <select id="u-role" class="input" data-req data-label="Role" aria-required="true" aria-describedby="err-u-role"><option value="">Select role</option><option>Administrator</option><option>Violation manager</option></select><p id="err-u-role" class="err"></p></div>
+        <div class="field"><label class="label" for="u-level">Level <span class="proposed">1–3</span></label><select id="u-level" class="input"><option value=""></option><option>1</option><option>2</option><option>3</option></select></div>
+        <div class="field sm:col-span-2"><label class="label" for="u-pass">Password <span class="req-star" id="u-pass-star" aria-hidden="true">*</span></label>
+          <div class="relative">
+            <input id="u-pass" type="password" class="input pr-11" placeholder="Create a password" data-label="Password" aria-describedby="err-u-pass">
+            <button type="button" data-pw-toggle="u-pass" aria-label="Show password" aria-pressed="false" class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-700 focus-ring">👁</button>
+          </div>
+          <p id="err-u-pass" class="err"></p>
+          <div class="mt-2">
+            <div class="flex items-center gap-2">
+              <div id="upw-meter" class="flex h-1.5 flex-1 gap-1" aria-hidden="true">
+                <div class="h-full flex-1 rounded-full bg-gray-200"></div>
+                <div class="h-full flex-1 rounded-full bg-gray-200"></div>
+                <div class="h-full flex-1 rounded-full bg-gray-200"></div>
+                <div class="h-full flex-1 rounded-full bg-gray-200"></div>
+              </div>
+              <span id="upw-strength-label" class="w-16 text-right text-xs font-medium text-gray-500" aria-live="polite"></span>
+            </div>
+            <ul id="upw-rules" class="mt-2 grid grid-cols-1 gap-x-4 gap-y-1 text-xs sm:grid-cols-2"></ul>
+            <p id="upw-toolong" class="mt-1 text-xs text-red-500" hidden>Maximum 128 characters.</p>
+          </div>
+          <p class="mt-1 text-xs text-gray-400" id="u-pass-hint"></p></div>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-grey" data-close="user-modal">Cancel</button><button id="user-save" class="btn btn-green" data-action="save-user" disabled>Save</button></div>
+  </div>
+</div>
+
+<div id="reply-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="reply-modal-title">
+  <div class="modal-card max-w-xl">
+    <div class="modal-head"><h2 id="reply-modal-title" class="modal-title">Reply to message</h2><button class="modal-close" data-close="reply-modal" aria-label="Close dialog">×</button></div>
+    <div class="modal-divider"></div>
+    <div class="modal-body">
+      <dl id="reply-detail" class="text-sm"></dl>
+      <div class="field mt-4"><label class="label" for="reply-text">Your response <span class="req-star" aria-hidden="true">*</span></label>
+        <textarea id="reply-text" rows="4" class="input" placeholder="Type the reply the citizen will receive" data-req data-label="Response" aria-required="true" aria-describedby="err-reply-text"></textarea><p id="err-reply-text" class="err"></p></div>
+      <p class="text-xs text-gray-400">Marks the message as replied and stamps <i>Replied At</i>.</p>
+    </div>
+    <div class="modal-foot"><button class="btn btn-grey" data-close="reply-modal">Cancel</button><button class="btn btn-primary" data-action="save-reply">Send reply</button></div>
+  </div>
+</div>
+
+<div id="app-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="app-modal-title">
+  <div class="modal-card max-w-2xl">
+    <div class="modal-head"><h2 id="app-modal-title" class="modal-title">App User</h2><button class="modal-close" data-close="app-modal" aria-label="Close dialog">×</button></div>
+    <div class="modal-divider"></div>
+    <div class="modal-body">
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div class="field"><label class="label" for="a-first">First Name</label><input id="a-first" class="input"></div>
+        <div class="field"><label class="label" for="a-last">Last Name</label><input id="a-last" class="input"></div>
+        <div class="field"><label class="label" for="a-email">Email</label><input id="a-email" type="email" class="input" aria-describedby="err-a-email"><p id="err-a-email" class="err"></p></div>
+        <div class="field"><label class="label" for="a-phone">Phone No <span class="req-star" aria-hidden="true">*</span></label>
+          <input id="a-phone" class="input" inputmode="numeric" data-req data-label="Phone No" data-pattern="digits" aria-required="true" aria-describedby="err-a-phone"><p id="err-a-phone" class="err"></p></div>
+        <div class="field"><label class="label" for="a-earn">Earner Points</label><input id="a-earn" type="number" min="0" class="input" value="0"></div>
+        <div class="field"><label class="label" for="a-red">Reedemed Points</label><input id="a-red" type="number" min="0" class="input" value="0"></div>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-grey" data-close="app-modal">Cancel</button><button id="app-save" class="btn btn-green" data-action="save-app" disabled>Save</button></div>
+  </div>
+</div>
+
+<div id="logout-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="logout-title">
+  <div class="modal-card max-w-sm text-center">
+    <div class="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-amber-100 text-3xl" aria-hidden="true">🚪</div>
+    <h2 id="logout-title" class="text-xl font-semibold text-gray-800">Are you sure you want to sign out?</h2>
+    <p class="mx-auto mt-2 max-w-xs text-sm text-gray-500">You'll be returned to the login screen and will need to sign in again.</p>
+    <div class="mt-7 flex justify-center gap-3">
+      <button class="rounded-lg border border-gray-300 px-6 py-2.5 text-sm font-bold text-gray-700 hover:bg-gray-50 focus-ring" data-close="logout-modal">Cancel</button>
+      <button class="rounded-lg bg-red-600 px-6 py-2.5 text-sm font-bold text-white hover:bg-red-700 focus-ring" data-action="logout">Sign out</button>
+    </div>
+  </div>
+</div>
+
+<div id="owner-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="owner-modal-title">
+  <div class="modal-card max-w-lg">
+    <div class="modal-head"><h2 id="owner-modal-title" class="modal-title">Add Owner</h2><button class="modal-close" data-close="owner-modal" aria-label="Close dialog">×</button></div>
+    <div class="modal-divider"></div>
+    <div class="modal-body">
+      <p class="mb-4 text-xs text-gray-400">Fields marked <span class="req-star">*</span> are required.</p>
+      <div class="field"><label class="label" for="owner-name">Owner <span class="req-star" aria-hidden="true">*</span></label>
+        <input id="owner-name" maxlength="60" class="input" placeholder="e.g. Police" data-req data-label="Owner" aria-required="true" aria-describedby="err-owner-name"><p id="err-owner-name" class="err"></p></div>
+      <div class="field"><label class="label" for="owner-desc">Description <span class="req-star" aria-hidden="true">*</span></label>
+        <textarea id="owner-desc" rows="3" maxlength="150" class="input" placeholder="Short description" data-req data-label="Description" aria-required="true" aria-describedby="err-owner-desc"></textarea><p id="err-owner-desc" class="err"></p></div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-grey" data-close="owner-modal">Cancel</button><button class="btn btn-green" data-action="save-owner">Save</button></div>
+  </div>
+</div>
+
+<div id="feedback-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="feedback-modal-title">
+  <div class="modal-card max-w-lg">
+    <div class="modal-head"><h2 id="feedback-modal-title" class="modal-title">Feedback</h2><button class="modal-close" data-close="feedback-modal" aria-label="Close dialog">×</button></div>
+    <div class="modal-divider"></div>
+    <div class="modal-body">
+      <!-- form state -->
+      <form id="feedback-form" onsubmit="return false">
+        <p class="mb-4 text-sm text-gray-500">Share a question, issue, or suggestion. Fields marked <span class="req-star">*</span> are required.</p>
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div class="field"><label class="label" for="fb-name">Name <span class="req-star" aria-hidden="true">*</span></label>
+            <input id="fb-name" class="input" data-req data-label="Name" aria-required="true" aria-describedby="err-fb-name"><p id="err-fb-name" class="err"></p></div>
+          <div class="field"><label class="label" for="fb-email">Email <span class="req-star" aria-hidden="true">*</span></label>
+            <input id="fb-email" type="email" class="input" placeholder="name@example.com" data-req data-label="Email" aria-required="true" aria-describedby="err-fb-email"><p id="err-fb-email" class="err"></p></div>
+          <div class="field sm:col-span-2"><label class="label" for="fb-subject">Subject</label>
+            <select id="fb-subject" class="input"><option>General feedback</option><option>Report a problem</option><option>Feature request</option><option>Account / login issue</option></select></div>
+          <div class="field sm:col-span-2"><label class="label" for="fb-message">Message <span class="req-star" aria-hidden="true">*</span></label>
+            <textarea id="fb-message" rows="4" maxlength="1000" class="input" placeholder="Tell us what's on your mind…" data-req data-label="Message" aria-required="true" aria-describedby="err-fb-message"></textarea><p id="err-fb-message" class="err"></p></div>
+        </div>
+      </form>
+      <!-- sent state -->
+      <div id="feedback-sent" class="hidden py-6 text-center" role="status">
+        <div class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-green-100 text-3xl text-green-600" aria-hidden="true">✓</div>
+        <h3 class="text-lg font-semibold text-gray-800">Thanks for your feedback!</h3>
+        <p class="mt-2 text-sm text-gray-500">We've received your message and will get back to you if a reply is needed.</p>
+      </div>
+    </div>
+    <div class="modal-foot" id="feedback-foot">
+      <button class="btn btn-grey" data-close="feedback-modal">Cancel</button>
+      <button class="btn btn-primary" data-action="feedback-send">Send feedback</button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

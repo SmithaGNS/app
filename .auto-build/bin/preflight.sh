@@ -16,11 +16,10 @@ else add node true false "" "install Node.js 20+ (https://nodejs.org)"; fi
 has npm && add npm true true "$(npm -v)" "" || add npm true false "" "comes with Node.js"
 has git && add git true true "$(git --version | awk '{print $3}')" "" || add git true false "" "install git"
 has claude && add claude true true "$(claude --version 2>/dev/null | head -1)" "" || add claude true false "" "npm install -g @anthropic-ai/claude-code"
-# Database: docker compose OR local postgres
-if has docker && docker compose version >/dev/null 2>&1; then add docker true true "$(docker --version | awk '{print $3}' | tr -d ,)" ""; dockerok=1
-else add docker false false "" "Docker Desktop — or a local PostgreSQL 14+"; dockerok=0; fi
-if has psql; then add postgres false true "$(psql --version | awk '{print $3}')" ""
-elif [ $dockerok -eq 0 ]; then add postgres true false "" "need Docker or a local PostgreSQL"; else add postgres false true "via docker" ""; fi
+# Database: local MySQL (Laragon)
+if has mysql; then add mysql true true "$(mysql --version | awk '{print $3}')" ""
+elif has mysqladmin; then add mysql true true "mysqladmin on PATH" ""
+else add mysql true false "" "need a local MySQL 8 (Laragon) with mysql on PATH"; fi
 # Playwright browsers
 if [ -d "$HOME/.cache/ms-playwright" ] || [ -d "$HOME/Library/Caches/ms-playwright" ]; then add playwright true true "browsers installed" ""
 else
