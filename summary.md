@@ -14,6 +14,7 @@ Open questions: 0 (0 high impact) · Decisions: 0 → see `open-questions.csv`
 | contact | backend | ✅ Merged | - | 1/3 | 120 tests green in repo (51 unit, 69 e2e; 28 contact); security PASSED; UI-only TCs deferred to frontend |
 | catalogue | backend | ✅ Merged | - | 1/3 | 63 catalogue tests green (14 unit, 49 e2e; repo 65/118); security PASSED; UI-only TCs deferred to frontend |
 | users | backend | ✅ Merged | - | 1/3 | 99 users tests green (17 unit, 82 e2e; repo 82/200); security PASSED; 59 UI-only TCs deferred to frontend |
+| violations | backend | ✅ Merged | - | 1/3 | 49 violations tests green (8 unit, 41 e2e; repo 91 unit + 241 e2e = 332); security PASSED; architecture approved (ADR 0001); list paging unified; UI-only TCs deferred to frontend |
 
 <!-- Status values: ⏳ Not started · 📋 Planning · 🗄️ DB design · ✍️ Stories · 👩‍💻 Developing (round n/3) · ✅ Verified · 🧪 Testing (run n) · 🔗 Integration testing · 🛡️ Security audit · 🏛️ Architecture review · ✅ Merged · 🐞 Bug fixing · 🔒 Blocked (security) · ⚠️ Merged with open issues -->
 
@@ -25,6 +26,7 @@ Open questions: 0 (0 high impact) · Decisions: 0 → see `open-questions.csv`
 - contact backend: `testresults/contact/backend-test-report.md` (all pass)
 - catalogue backend: `testresults/catalogue/backend-test-report.md` (all pass)
 - users backend: `testresults/users/backend-test-report.md` (all pass)
+- violations backend: `testresults/violations/backend-test-report.md` (49/49 pass)
 - auth frontend: `testresults/auth/frontend-test-report.md` (49 Vitest + 125 Playwright pass, 144/144 TCs mapped)
 
 ## Links

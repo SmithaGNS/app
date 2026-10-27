@@ -16,6 +16,8 @@ tags:
   - name: catalogue
   - name: users
     description: Portal users (SCR-20), app users (SCR-21), profile and change password (SCR-22).
+  - name: violations
+    description: Violation reports list and review (SCR-06/07), dashboard (SCR-05), navigation counts and filter lookups.
   - name: health
   - name: dev
     description: Development/test only, absent (404) unless DEV_MAILBOX_ENABLED=true; never in production.
@@ -131,31 +133,26 @@ components:
         updatedAt: { type: [string, "null"], format: date-time }
     CategoryPage:
       type: object
-      required: [items, page, pageSize, total, totalPages]
+      required: [items, meta]
       properties:
         items: { type: array, items: { $ref: "#/components/schemas/Category" } }
-        page: { type: integer }
-        pageSize: { type: integer }
-        total: { type: integer }
-        totalPages: { type: integer }
+        meta: { $ref: "#/components/schemas/PageMeta" }
     OwnerPage:
       type: object
-      required: [items, page, pageSize, total, totalPages]
+      required: [items, meta]
       properties:
         items: { type: array, items: { $ref: "#/components/schemas/Owner" } }
-        page: { type: integer }
-        pageSize: { type: integer }
-        total: { type: integer }
-        totalPages: { type: integer }
+        meta: { $ref: "#/components/schemas/PageMeta" }
     # ---- users module (SCR-20/21/22) -------------------------------------------------------------
     PageMeta:
       type: object
-      required: [total, perPage, currentPage, lastPage]
+      description: One paging contract for every list endpoint (catalogue, contact, users, violations).
+      required: [page, pageSize, total, totalPages]
       properties:
+        page: { type: integer, minimum: 1 }
+        pageSize: { type: integer, minimum: 1 }
         total: { type: integer, minimum: 0 }
-        perPage: { type: integer, enum: [10, 25, 50, 100] }
-        currentPage: { type: integer, minimum: 1 }
-        lastPage: { type: integer, minimum: 1 }
+        totalPages: { type: integer, minimum: 1, description: "At least 1, also when total is 0" }
     PortalUserAdmin:
       type: object
       required: [id, firstName, lastName, name, email, phoneCountryCode, phone, phoneDisplay, address, role, level, status, mustChangePassword, lastLoginAt, createdAt]
@@ -250,6 +247,110 @@ components:
         currentPassword: { type: string, minLength: 1, maxLength: 128 }
         newPassword: { type: string, minLength: 12, maxLength: 128, description: Shared password policy; must differ from the current one }
         confirmPassword: { type: string, description: Must equal newPassword }
+    # ---- violations module (SCR-05/06/07) ---------------------------------------------------------
+    ViolationStatus:
+      type: string
+      enum: [Pending, Under review, Verified, Rejected]
+    ViolationItem:
+      type: object
+      required: [id, serialNo, mobile, vehicleType, category, categoryOwner, otherDescription, location, notes, registrationNo, createdAt, status, level, statusUpdatedBy, statusUpdatedAt, evidenceCount]
+      properties:
+        id: { type: string, format: uuid }
+        serialNo: { type: integer, description: "S No (stable per report; list order is newest first)" }
+        mobile: { type: [string, "null"], description: "ALWAYS masked, e.g. +1 •••••••290; null when the reporter account is gone. Full number only via reveal-phone.", examples: ["+1 •••••••290"] }
+        vehicleType: { type: [string, "null"], maxLength: 30 }
+        category: { type: object, properties: { id: { type: string, format: uuid }, name: { type: string } } }
+        categoryOwner: { type: [object, "null"], description: Derived through the category, properties: { id: { type: string, format: uuid }, name: { type: string } } }
+        otherDescription: { type: [string, "null"], maxLength: 200 }
+        location: { type: string, maxLength: 300 }
+        notes: { type: [string, "null"], maxLength: 1000 }
+        registrationNo: { type: [string, "null"], maxLength: 20 }
+        createdAt: { type: string, format: date-time, description: "UTC; the frontend formats YYYY-MM-DD HH:mm:ss" }
+        status: { $ref: "#/components/schemas/ViolationStatus" }
+        level: { type: integer, minimum: 0, maximum: 3 }
+        statusUpdatedBy: { type: [object, "null"], properties: { id: { type: string, format: uuid }, name: { type: string } } }
+        statusUpdatedAt: { type: [string, "null"], format: date-time }
+        evidenceCount: { type: integer, minimum: 0, description: "Evidence metadata rows; no upload/viewer exists yet" }
+    ViolationDetail:
+      allOf:
+        - $ref: "#/components/schemas/ViolationItem"
+        - type: object
+          required: [history, evidence]
+          properties:
+            history:
+              type: array
+              description: Append-only review history, oldest first
+              items:
+                type: object
+                properties:
+                  id: { type: string, format: uuid }
+                  fromStatus: { $ref: "#/components/schemas/ViolationStatus" }
+                  toStatus: { $ref: "#/components/schemas/ViolationStatus" }
+                  fromLevel: { type: integer }
+                  toLevel: { type: integer }
+                  note: { type: [string, "null"], maxLength: 500 }
+                  actor: { type: object, properties: { id: { type: string, format: uuid }, name: { type: string } } }
+                  createdAt: { type: string, format: date-time }
+            evidence:
+              type: array
+              items:
+                type: object
+                properties:
+                  id: { type: string, format: uuid }
+                  kind: { type: string, enum: [photo, video] }
+                  mimeType: { type: string }
+                  sizeBytes: { type: integer }
+                  createdAt: { type: string, format: date-time }
+    ViolationReview:
+      type: object
+      required: [status, level]
+      additionalProperties: false
+      properties:
+        status: { $ref: "#/components/schemas/ViolationStatus" }
+        level: { type: integer, minimum: 0, maximum: 3, description: "Verified needs 1..3 ('Set a severity level before verifying.')" }
+        note: { type: string, maxLength: 500, description: "Trimmed, < > stripped; required when status is Rejected ('Give a reason for rejecting this report.')" }
+    ViolationIntake:
+      type: object
+      required: [reporterId, categoryId, location]
+      additionalProperties: false
+      properties:
+        reporterId: { type: string, format: uuid, description: App user id }
+        categoryId: { type: string, format: uuid }
+        location: { type: string, minLength: 1, maxLength: 300 }
+        vehicleType: { type: string, maxLength: 30 }
+        otherDescription: { type: string, maxLength: 200, description: Required when the category is Other }
+        registrationNo: { type: string, maxLength: 20 }
+        notes: { type: string, maxLength: 1000 }
+    Dashboard:
+      type: object
+      required: [violations, funnel, categories, portalUsers, appUsers, messages, latest]
+      properties:
+        violations:
+          type: object
+          required: [total, pending, underReview, verified, rejected]
+          properties: { total: { type: integer }, pending: { type: integer }, underReview: { type: integer }, verified: { type: integer }, rejected: { type: integer } }
+        funnel:
+          type: object
+          required: [submitted, pending, underReview, verified, rejected]
+          properties: { submitted: { type: integer }, pending: { type: integer }, underReview: { type: integer }, verified: { type: integer }, rejected: { type: integer } }
+        categories: { type: integer }
+        portalUsers: { type: integer }
+        appUsers: { type: integer }
+        messages: { type: object, required: [total, unanswered], properties: { total: { type: integer }, unanswered: { type: integer } } }
+        latest:
+          type: array
+          maxItems: 5
+          description: Five newest reports, phone masked
+          items:
+            type: object
+            properties:
+              id: { type: string, format: uuid }
+              serialNo: { type: integer }
+              mobile: { type: [string, "null"] }
+              category: { type: string }
+              location: { type: string }
+              createdAt: { type: string, format: date-time }
+              status: { $ref: "#/components/schemas/ViolationStatus" }
   parameters:
     CataloguePage: { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
     CataloguePageSize: { name: pageSize, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 10 } }
@@ -1021,7 +1122,7 @@ paths:
       x-permission: portal-users:manage
       parameters:
         - { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
-        - { name: perPage, in: query, schema: { type: integer, enum: [10, 25, 50, 100], default: 10 } }
+        - { name: pageSize, in: query, schema: { type: integer, enum: [10, 25, 50, 100], default: 10 } }
         - { name: search, in: query, schema: { type: string, maxLength: 100 }, description: Substring match done server-side }
       responses:
         "200":
@@ -1175,7 +1276,7 @@ paths:
       x-permission: app-users:manage
       parameters:
         - { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
-        - { name: perPage, in: query, schema: { type: integer, enum: [10, 25, 50, 100], default: 10 } }
+        - { name: pageSize, in: query, schema: { type: integer, enum: [10, 25, 50, 100], default: 10 } }
         - { name: search, in: query, schema: { type: string, maxLength: 100 }, description: Substring match done server-side }
       responses:
         "200":
@@ -1385,4 +1486,198 @@ paths:
         "400": { $ref: "#/components/responses/ValidationError" }
         "401": { $ref: "#/components/responses/Unauthenticated" }
         "403": { $ref: "#/components/responses/Forbidden" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+  /v1/violations:
+    get:
+      operationId: violationsList
+      tags: [violations]
+      summary: Violation reports, newest first, server paging and filters (SCR-06). Phone numbers are masked.
+      security: [{ bearerAuth: [] }]
+      x-roles: [Administrator, ViolationManager]
+      x-permission: violations:read
+      parameters:
+        - { name: page, in: query, schema: { type: integer, minimum: 1, maximum: 100000, default: 1 } }
+        - { name: pageSize, in: query, schema: { type: integer, enum: [10, 25, 50, 100], default: 10 } }
+        - { name: ownerId, in: query, description: Category owner (derived through the category), schema: { type: string, format: uuid } }
+        - { name: createdFrom, in: query, description: "Inclusive, yyyy-mm-dd (UTC), 2020-01-01..today", schema: { type: string, format: date } }
+        - { name: createdTo, in: query, description: "Inclusive, yyyy-mm-dd (UTC); must not be before createdFrom", schema: { type: string, format: date } }
+        - { name: status, in: query, schema: { $ref: "#/components/schemas/ViolationStatus" } }
+        - { name: search, in: query, description: "Max 100; matches category, owner, location, notes, registration no, other description, vehicle type, reviewer name. NOT the phone number.", schema: { type: string, maxLength: 100 } }
+      responses:
+        "200":
+          description: One page (items empty when nothing matches)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - properties:
+                      data:
+                        type: object
+                        required: [items, meta]
+                        properties:
+                          items: { type: array, items: { $ref: "#/components/schemas/ViolationItem" } }
+                          meta: { $ref: "#/components/schemas/PageMeta" }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /v1/violations/{id}:
+    get:
+      operationId: violationsGet
+      tags: [violations]
+      summary: One report with review history and evidence metadata (fills the review modal). Phone masked.
+      security: [{ bearerAuth: [] }]
+      x-roles: [Administrator, ViolationManager]
+      x-permission: violations:read
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200":
+          description: The report
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - properties: { data: { $ref: "#/components/schemas/ViolationDetail" } }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { description: "Unknown, deleted or malformed id (errors.code violation_not_found)" }
+  /v1/violations/{id}/review:
+    put:
+      operationId: violationsReview
+      tags: [violations]
+      summary: Save a review (status, level, note). Forward-only; reviewer is the signed-in user. Credits NO reward points.
+      security: [{ bearerAuth: [] }]
+      x-roles: [Administrator, ViolationManager]
+      x-permission: violations:review
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/ViolationReview" } } }
+      responses:
+        "200":
+          description: 'Updated report (data = ViolationDetail); message "Report {serialNo} updated to {status}."'
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - properties: { data: { $ref: "#/components/schemas/ViolationDetail" } }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { description: Unknown report }
+        "409": { description: "errors.code status_transition_not_allowed ('That status change is not allowed.') or violation_modified ('This report was updated by someone else.')" }
+  /v1/violations/{id}/reveal-phone:
+    post:
+      operationId: violationsRevealPhone
+      tags: [violations]
+      summary: Reveal the reporter's full phone number. Administrator only; every call is written to audit_logs first.
+      security: [{ bearerAuth: [] }]
+      x-roles: [Administrator]
+      x-permission: violations:reveal-phone
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200":
+          description: The number
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - properties:
+                      data:
+                        type: object
+                        properties:
+                          phoneCountryCode: { type: [string, "null"] }
+                          phone: { type: string }
+                          phoneDisplay: { type: string, examples: ["+1 876 3125290"] }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { description: "Unknown report, or the reporter account is gone (errors.code reporter_phone_unavailable)" }
+  /v1/dashboard:
+    get:
+      operationId: dashboardGet
+      tags: [violations]
+      summary: Dashboard tiles, funnel and the five latest reports, all computed server-side (SCR-05)
+      security: [{ bearerAuth: [] }]
+      x-roles: [Administrator, ViolationManager]
+      x-permission: dashboard:read
+      responses:
+        "200":
+          description: Figures
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - properties: { data: { $ref: "#/components/schemas/Dashboard" } }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /v1/navigation/counts:
+    get:
+      operationId: navigationCounts
+      tags: [violations]
+      summary: Sidebar badge numbers (Pending violation reports)
+      security: [{ bearerAuth: [] }]
+      x-roles: [Administrator, ViolationManager]
+      x-permission: violations:read
+      responses:
+        "200":
+          description: "data: { pendingViolations: integer }"
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /v1/lookups/categories:
+    get:
+      operationId: lookupsCategories
+      tags: [violations]
+      summary: Categories with their owner, for list filters (read-only; both portal roles)
+      security: [{ bearerAuth: [] }]
+      x-roles: [Administrator, ViolationManager]
+      x-permission: violations:read
+      responses:
+        "200": { description: "data: [{ id, name, owner: { id, name } | null }] in catalogue order" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /v1/lookups/owners:
+    get:
+      operationId: lookupsOwners
+      tags: [violations]
+      summary: Owners for the Category Owner filter (read-only; both portal roles)
+      security: [{ bearerAuth: [] }]
+      x-roles: [Administrator, ViolationManager]
+      x-permission: violations:read
+      responses:
+        "200": { description: "data: [{ id, name }]" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /v1/lookups/statuses:
+    get:
+      operationId: lookupsStatuses
+      tags: [violations]
+      summary: The four status values in order
+      security: [{ bearerAuth: [] }]
+      x-roles: [Administrator, ViolationManager]
+      x-permission: violations:read
+      responses:
+        "200": { description: 'data: ["Pending","Under review","Verified","Rejected"]' }
+  /v1/public/violations:
+    post:
+      operationId: violationsIntake
+      tags: [violations]
+      summary: Citizen app intake stub (no evidence upload yet). Authenticated by the x-service-key header (env INTAKE_SERVICE_KEY, unset disables it); 30 per 15 min per IP.
+      security: []
+      x-roles: [public]
+      parameters:
+        - { name: x-service-key, in: header, required: true, schema: { type: string, minLength: 32 } }
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/ViolationIntake" } } }
+      responses:
+        "201": { description: 'Created as Pending, level 0; data: { id, serialNo }; message "Violation report received."' }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { description: "Missing or wrong service key (errors.code service_key_invalid)" }
         "429": { $ref: "#/components/responses/TooManyRequests" }

@@ -1,5 +1,19 @@
 # API contract changelog
 
+## 2026-10-27 - violations module (additive) and list-paging unification (BREAKING for users and catalogue lists)
+
+**Breaking (frontend migration):** every list now returns `data: { items, meta: { page, pageSize, total, totalPages } }` and takes `page` and `pageSize`.
+- Users lists (`GET /v1/portal-users`, `GET /v1/app-users`): query `perPage` becomes `pageSize`; `meta { total, perPage, currentPage, lastPage }` becomes `meta { page, pageSize, total, totalPages }`.
+- Catalogue lists (`GET /v1/categories`, `GET /v1/owners`): `page, pageSize, total, totalPages` move from `data` into `data.meta`.
+- Contact list unchanged except an empty list now reports `totalPages: 1` (was 0). `totalPages` is always at least 1.
+
+**New (Bearer, Administrator and ViolationManager unless noted):**
+- `GET /v1/violations` (page, pageSize 10/25/50/100, ownerId, createdFrom, createdTo, status, search), `GET /v1/violations/{id}`, `PUT /v1/violations/{id}/review` (body status, level 0-3, note), `POST /v1/violations/{id}/reveal-phone` (Administrator only, audited)
+- `GET /v1/dashboard`, `GET /v1/navigation/counts`, `GET /v1/lookups/categories|owners|statuses`
+- `POST /v1/public/violations` (intake stub, header `x-service-key`)
+
+Frontend notes: `mobile` is always masked; call reveal-phone for the full number (403 for the manager role, hide the eye icon). Status values are the display strings "Pending", "Under review", "Verified", "Rejected". Review errors: 409 `status_transition_not_allowed` / `violation_modified`, 400 field errors on `level` and `note`. Dates are ISO-8601 UTC; format `YYYY-MM-DD HH:mm:ss` in the UI. Deleting a category used by a report now returns 409 `category_in_use`. No reward points are credited on Verified, so do not promise them in the toast.
+
 ## 2026-10-27 - auth module (0.1.0) - initial contract
 
 `api-contract/` was re-created (folder had been deleted). New, non-breaking (nothing existed before):
