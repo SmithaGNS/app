@@ -87,6 +87,12 @@
         "unit": 14,
         "e2e": 49,
         "failed": 0
+      },
+      "frontend": "merged",
+      "frontendTests": {
+        "unit": 24,
+        "e2e": 65,
+        "failed": 0
       }
     },
     "users": {

@@ -14,6 +14,7 @@ Open questions: 0 (0 high impact) · Decisions: 0 → see `open-questions.csv`
 | contact | backend | ✅ Merged | - | 1/3 | 120 tests green in repo (51 unit, 69 e2e; 28 contact); security PASSED; UI-only TCs deferred to frontend |
 | contact | frontend | ✅ Merged | - | 1/3 | SCR-13 list/search/paging/reply/edit; 37 new tests (13 Vitest + 24 Playwright incl. 1 real-backend) green, full suite 62 Vitest + 149 Playwright; axe clean; security PASSED; TC-WEB-029 expected deviation (roles.md); Chromium only |
 | catalogue | backend | ✅ Merged | - | 1/3 | 63 catalogue tests green (14 unit, 49 e2e; repo 65/118); security PASSED; UI-only TCs deferred to frontend |
+| catalogue | frontend | ✅ Merged | - | 1/3 | SCR-10/11/12; 24 Vitest + 65 Playwright (10 against real backend) green, full suite 86 Vitest + 236 Playwright; axe clean; security PASSED; CSV/Excel/Print not built, no pixel baselines |
 | users | backend | ✅ Merged | - | 1/3 | 99 users tests green (17 unit, 82 e2e; repo 82/200); security PASSED; 59 UI-only TCs deferred to frontend |
 | violations | backend | ✅ Merged | - | 1/3 | 49 violations tests green (8 unit, 41 e2e; repo 91 unit + 241 e2e = 332); security PASSED; architecture approved (ADR 0001); list paging unified; UI-only TCs deferred to frontend |
 
