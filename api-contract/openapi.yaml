@@ -1,24 +1,440 @@
 openapi: 3.1.0
 info:
-  title: drivesafe API
+  title: DriveSafe Admin Portal API
   version: 0.1.0
+  description: |
+    Source of truth between backend and frontend. Every response uses the envelope
+    `{ message, data, errors }`. Validation failures (400) carry
+    `errors: { validation: string[], fields: { [field]: string[] } }`; other failures may carry
+    `errors: { code }` (machine code). Success responses have `errors: null`.
 servers:
-  - url: http://localhost:3000/v1
-paths: {}
+  - url: http://localhost:3000
+    description: local development
+tags:
+  - name: auth
+  - name: public
+  - name: health
+  - name: dev
+    description: Development/test only, absent (404) unless DEV_MAILBOX_ENABLED=true; never in production.
 components:
   securitySchemes:
-    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
+    ErrorEnvelope:
+      type: object
+      required: [message, data, errors]
+      properties:
+        message: { type: string, examples: ["Incorrect username or password."] }
+        data: { type: "null" }
+        errors:
+          oneOf:
+            - type: "null"
+            - type: object
+              properties:
+                code:
+                  type: string
+                  enum: [invalid_credentials, login_locked, otp_incorrect, otp_expired, otp_attempts_exceeded, otp_resend_wait, rate_limited, session_expired, unauthenticated, forbidden, reset_token_invalid]
+            - type: object
+              properties:
+                validation: { type: array, items: { type: string } }
+                fields:
+                  type: object
+                  additionalProperties: { type: array, items: { type: string } }
+    Role:
+      type: string
+      enum: [Administrator, ViolationManager]
+    PortalUser:
+      type: object
+      required: [id, name, email, role, level, status, mustChangePassword, lastLoginAt, phone, address]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        email: { type: string, format: email }
+        phone: { type: [string, "null"] }
+        address: { type: [string, "null"] }
+        role: { $ref: "#/components/schemas/Role" }
+        level: { type: [integer, "null"], minimum: 1, maximum: 3 }
+        status: { type: string, enum: [Active, Inactive] }
+        mustChangePassword: { type: boolean }
+        lastLoginAt: { type: [string, "null"], format: date-time }
+    Challenge:
+      type: object
+      required: [challengeId, purpose, destination, resendAfterSeconds]
+      properties:
+        challengeId: { type: string, format: uuid }
+        purpose: { type: string, enum: [login, reset] }
+        destination: { type: string, description: Masked e-mail the code was sent to, examples: ["ad*************@test.local"] }
+        resendAfterSeconds: { type: integer, examples: [60] }
+    TokenPair:
+      type: object
+      required: [accessToken, refreshToken, expiresIn, tokenType]
+      properties:
+        accessToken: { type: string }
+        refreshToken: { type: string }
+        expiresIn: { type: integer, description: Access token lifetime in seconds, examples: [900] }
+        tokenType: { type: string, enum: [Bearer] }
     Envelope:
       type: object
+      required: [message, data, errors]
       properties:
         message: { type: string }
-        data: {}
-        errors: { type: object, additionalProperties: { type: array, items: { type: string } } }
-    PaginationMeta:
-      type: object
-      properties:
-        page: { type: integer }
-        perPage: { type: integer }
-        total: { type: integer }
-        lastPage: { type: integer }
+        errors: { type: "null" }
+  responses:
+    ValidationError:
+      description: Validation failed
+      content: { application/json: { schema: { $ref: "#/components/schemas/ErrorEnvelope" } } }
+    Unauthenticated:
+      description: Missing/invalid token, revoked session, or idle timeout (errors.code unauthenticated | session_expired)
+      content: { application/json: { schema: { $ref: "#/components/schemas/ErrorEnvelope" } } }
+    Forbidden:
+      description: Role lacks the permission (errors.code forbidden)
+      content: { application/json: { schema: { $ref: "#/components/schemas/ErrorEnvelope" } } }
+    TooManyRequests:
+      description: Rate limited / throttled (errors.code rate_limited | login_locked | otp_attempts_exceeded | otp_resend_wait)
+      content: { application/json: { schema: { $ref: "#/components/schemas/ErrorEnvelope" } } }
+paths:
+  /health:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Liveness (unauthenticated, outside /v1)
+      security: []
+      x-roles: [public]
+      responses:
+        "200":
+          description: ok
+          content: { application/json: { schema: { type: object, properties: { status: { type: string, enum: [ok] } } } } }
+  /v1/auth/login:
+    post:
+      operationId: authLogin
+      tags: [auth]
+      summary: Step 1 - check credentials and start an OTP challenge (SCR-00)
+      security: []
+      x-roles: [public]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [username, password]
+              properties:
+                username: { type: string, minLength: 3, maxLength: 254, description: Account e-mail; trimmed, lower-cased, "<" ">" stripped }
+                password: { type: string, minLength: 1, maxLength: 128, description: Not trimmed }
+      responses:
+        "200":
+          description: Code sent to the registered e-mail
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - properties: { data: { $ref: "#/components/schemas/Challenge" } }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401":
+          description: Incorrect username or password (generic; also unknown/inactive/deleted account). errors.code invalid_credentials
+          content: { application/json: { schema: { $ref: "#/components/schemas/ErrorEnvelope" } } }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+  /v1/auth/otp/verify:
+    post:
+      operationId: authOtpVerify
+      tags: [auth]
+      summary: Step 2 - verify the 6-digit code (SCR-02). Login challenge returns tokens; reset challenge delivers a reset link by e-mail.
+      security: []
+      x-roles: [public]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [challengeId, code]
+              properties:
+                challengeId: { type: string, format: uuid }
+                code: { type: string, pattern: "^[0-9]{6}$" }
+      responses:
+        "200":
+          description: |
+            purpose=login -> TokenPair + user; purpose=reset -> { purpose, destination, linkExpiresInMinutes }.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - properties:
+                      data:
+                        oneOf:
+                          - allOf:
+                              - $ref: "#/components/schemas/TokenPair"
+                              - type: object
+                                required: [purpose, user]
+                                properties:
+                                  purpose: { type: string, enum: [login] }
+                                  user: { $ref: "#/components/schemas/PortalUser" }
+                          - type: object
+                            required: [purpose, destination, linkExpiresInMinutes]
+                            properties:
+                              purpose: { type: string, enum: [reset] }
+                              destination: { type: string }
+                              linkExpiresInMinutes: { type: integer, examples: [30] }
+        "400":
+          description: Validation (code must be 6 digits - "Enter all 6 digits of the code."), otp_incorrect ("That code is incorrect."), otp_expired ("That code has expired. Request a new one.")
+          content: { application/json: { schema: { $ref: "#/components/schemas/ErrorEnvelope" } } }
+        "429":
+          description: Too many attempts (otp_attempts_exceeded) - "Too many attempts. Request a new code." (6th attempt on a code with 5 wrong entries) or IP rate limit
+          content: { application/json: { schema: { $ref: "#/components/schemas/ErrorEnvelope" } } }
+  /v1/auth/otp/resend:
+    post:
+      operationId: authOtpResend
+      tags: [auth]
+      summary: Issue a new code on the same challenge (allowed 60 s after the previous one)
+      security: []
+      x-roles: [public]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [challengeId]
+              properties:
+                challengeId: { type: string, format: uuid }
+      responses:
+        "200":
+          description: New code sent
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - properties:
+                      data:
+                        type: object
+                        properties:
+                          challengeId: { type: string, format: uuid }
+                          resendAfterSeconds: { type: integer }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+  /v1/auth/forgot:
+    post:
+      operationId: authForgot
+      tags: [auth]
+      summary: Start password reset (SCR-01). Same response whether or not the e-mail exists.
+      security: []
+      x-roles: [public]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [email]
+              properties:
+                email: { type: string, minLength: 5, maxLength: 254, pattern: "^\\S+@\\S+\\.\\S+$" }
+      responses:
+        "200":
+          description: Challenge (purpose=reset)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - properties: { data: { $ref: "#/components/schemas/Challenge" } }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+  /v1/auth/reset-password:
+    post:
+      operationId: authResetPassword
+      tags: [auth]
+      summary: Set a new password using the single-use token from the reset link (30 min). Revokes all sessions.
+      security: []
+      x-roles: [public]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [token, newPassword]
+              properties:
+                token: { type: string, minLength: 20, maxLength: 200 }
+                newPassword: { type: string, minLength: 12, maxLength: 128, description: Must contain upper-case, lower-case, a digit and a symbol }
+      responses:
+        "200":
+          description: Password reset
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - properties: { data: { type: "null" } }
+        "400":
+          description: Validation (password policy) or reset_token_invalid
+          content: { application/json: { schema: { $ref: "#/components/schemas/ErrorEnvelope" } } }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+  /v1/auth/refresh:
+    post:
+      operationId: authRefresh
+      tags: [auth]
+      summary: Rotate the refresh token; the previous one stops working
+      security: []
+      x-roles: [public]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [refreshToken]
+              properties:
+                refreshToken: { type: string, minLength: 20, maxLength: 200 }
+      responses:
+        "200":
+          description: New token pair
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - properties: { data: { $ref: "#/components/schemas/TokenPair" } }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+  /v1/auth/logout:
+    post:
+      operationId: authLogout
+      tags: [auth]
+      summary: End the current session (SCR-04); access and refresh tokens stop working
+      security: [{ bearerAuth: [] }]
+      x-roles: [Administrator, ViolationManager]
+      responses:
+        "200":
+          description: Signed out
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - properties: { data: { type: "null" } }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+  /v1/auth/me:
+    get:
+      operationId: authMe
+      tags: [auth]
+      summary: Signed-in identity for the shell header/sidebar (SCR-04). Permission profile:read.
+      security: [{ bearerAuth: [] }]
+      x-roles: [Administrator, ViolationManager]
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - properties: { data: { $ref: "#/components/schemas/PortalUser" } }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /v1/public/config:
+    get:
+      operationId: publicConfig
+      tags: [public]
+      summary: Badge name shown on SCR-00/01/02 before sign-in
+      security: []
+      x-roles: [public]
+      responses:
+        "200":
+          description: Config
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - properties:
+                      data:
+                        type: object
+                        required: [badgeName]
+                        properties:
+                          badgeName: { type: string, examples: ["Ministry of Transport and Mining"] }
+  /v1/public/feedback:
+    post:
+      operationId: publicFeedback
+      tags: [public]
+      summary: Store an anonymous feedback submission (SCR-03). Rate limited to 5 per 15 min per IP.
+      security: []
+      x-roles: [public]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [name, email, message]
+              properties:
+                name: { type: string, minLength: 2, maxLength: 100 }
+                email: { type: string, minLength: 5, maxLength: 254, pattern: "^\\S+@\\S+\\.\\S+$" }
+                subject:
+                  type: string
+                  enum: [general_feedback, report_problem, feature_request, account_login_issue]
+                  default: general_feedback
+                  description: "General feedback | Report a problem | Feature request | Account / login issue"
+                message: { type: string, minLength: 10, maxLength: 1000 }
+      responses:
+        "201":
+          description: Stored
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - properties:
+                      data:
+                        type: object
+                        properties:
+                          id: { type: string, format: uuid }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+  /v1/dev/mailbox:
+    get:
+      operationId: devMailbox
+      tags: [dev]
+      summary: "DEV/TEST ONLY: latest mock e-mails (OTP codes, reset tokens) for a recipient. 404 unless DEV_MAILBOX_ENABLED=true."
+      security: []
+      x-roles: [public]
+      parameters:
+        - { name: to, in: query, required: true, schema: { type: string, format: email } }
+      responses:
+        "200":
+          description: Newest first
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - properties:
+                      data:
+                        type: object
+                        properties:
+                          messages:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                kind: { type: string, enum: [otp, reset-link] }
+                                to: { type: string }
+                                code: { type: string }
+                                link: { type: string }
+                                token: { type: string }
+                                createdAt: { type: string, format: date-time }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "404": { description: Disabled }
