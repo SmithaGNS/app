@@ -2,6 +2,26 @@
 
 Updated: 2026-10-27 13:50
 
+## Run report (2026-10-27)
+
+**Status: done.** All 5 modules x 2 sides merged into  (backend + frontend). Nothing pushed;  untouched.
+
+| Check | Result |
+| --- | --- |
+| Backend unit (Vitest) | 91/91 pass |
+| Backend e2e vs MySQL test DB | 241/241 pass |
+| Frontend unit (Vitest) | 183/183 pass |
+| Frontend Playwright (Chromium, incl. real-backend specs) | 319/319 pass in one combined run |
+| Typecheck / build | pass (lint: 0 errors, warnings only) |
+| Live smoke (login -> OTP -> dashboard -> violations) | pass |
+
+**Not built / out of scope (PROPOSED answers):** CSV/Excel/Print export, reward-point crediting, delivery of contact replies and real OTP e-mail/SMS (mock provider), evidence upload/storage (metadata table only), citizen-app intake beyond documented stubs.
+**Not covered by tests:** Edge/Firefox/Safari, pixel comparison with story screenshots, coverage percentage, several UI-only seam TCs (see per-module test reports in testresults/).
+**Known deviations from test cases:** TC-SCR-13-WEB-029 and TC-SCR-05-WEB-025 expect the Violation manager to be denied; roles.md (PROPOSED matrix) allows both roles, so those assert the opposite. Reward-points toast text (TC-SCR-07-WEB-001/021/022) omitted.
+**Open questions:** 94 rows (88 decisions, 6 open, 0 high impact) in open-questions.csv. 48 requirement questions marked blocking by the BA pack were built with their PROPOSED answers; ratify them, then run /resolve-questions.
+**Test logins:** administrator@test.local / violation-manager@test.local, Test@1234 (dev/test only). Dev OTP: 123456 (OTP_DEV_CODE; blocked in production).
+**Links page:** output/index.html (apps are stopped; start commands are on the page).
+
 ## Progress
 
 2 of 10 module-sides developed (auth backend, auth frontend) · 0 in progress · 0 blocked

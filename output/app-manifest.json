@@ -1,0 +1,655 @@
+{
+  "project": "drivesafe",
+  "generatedAt": "2026-10-27T10:34:22.961Z",
+  "apps": [
+    {
+      "name": "backend",
+      "dir": "backend",
+      "start": "npm run start:dev",
+      "health": "/health",
+      "envVars": [
+        "PORT",
+        "HOST",
+        "DATABASE_URL",
+        "JWT_SECRET",
+        "JWT_REFRESH_SECRET",
+        "OTP_DEV_CODE",
+        "DEV_MAILBOX_ENABLED",
+        "INTAKE_SERVICE_KEY",
+        "APP_BASE_URL"
+      ],
+      "links": {
+        "localhost": "http://localhost:3000",
+        "lan": "http://60.5.2.198:3000",
+        "external": "",
+        "tunnel": ""
+      },
+      "apiContract": "api-contract/openapi.yaml"
+    },
+    {
+      "name": "frontend",
+      "dir": "frontend",
+      "start": "npm run dev",
+      "health": "/",
+      "envVars": [
+        "BACKEND_URL"
+      ],
+      "links": {
+        "localhost": "http://localhost:5173",
+        "lan": "http://60.5.2.198:5173",
+        "external": "",
+        "tunnel": ""
+      }
+    }
+  ],
+  "testAccounts": [
+    {
+      "role": "Administrator",
+      "username": "administrator@test.local",
+      "password": "Test@1234",
+      "landing": "/dashboard",
+      "access": [
+        "all screens",
+        "reveal phone numbers"
+      ]
+    },
+    {
+      "role": "Violation manager",
+      "username": "violation-manager@test.local",
+      "password": "Test@1234",
+      "landing": "/dashboard",
+      "access": [
+        "Dashboard",
+        "Violations",
+        "Contact Us",
+        "Profile"
+      ]
+    }
+  ],
+  "modules": [
+    {
+      "id": "auth",
+      "status": "merged",
+      "testCases": "testcases/auth/test-cases.md",
+      "latestReport": "testresults/auth/frontend-test-report.md",
+      "screens": [
+        {
+          "name": "Login",
+          "url": "http://localhost:5173/login",
+          "roles": [
+            "public"
+          ]
+        },
+        {
+          "name": "Forgot password",
+          "url": "http://localhost:5173/forgot",
+          "roles": [
+            "public"
+          ]
+        },
+        {
+          "name": "OTP verification",
+          "url": "http://localhost:5173/verify",
+          "roles": [
+            "public"
+          ]
+        }
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/health",
+          "url": "http://localhost:3000/health",
+          "roles": [
+            "Administrator",
+            "Violation manager"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/v1/auth/login",
+          "url": "http://localhost:3000/v1/auth/login",
+          "roles": [
+            "public"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/v1/auth/otp/verify",
+          "url": "http://localhost:3000/v1/auth/otp/verify",
+          "roles": [
+            "public"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/v1/auth/otp/resend",
+          "url": "http://localhost:3000/v1/auth/otp/resend",
+          "roles": [
+            "public"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/v1/auth/forgot",
+          "url": "http://localhost:3000/v1/auth/forgot",
+          "roles": [
+            "public"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/v1/auth/reset-password",
+          "url": "http://localhost:3000/v1/auth/reset-password",
+          "roles": [
+            "public"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/v1/auth/refresh",
+          "url": "http://localhost:3000/v1/auth/refresh",
+          "roles": [
+            "public"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/v1/auth/logout",
+          "url": "http://localhost:3000/v1/auth/logout",
+          "roles": [
+            "public"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/v1/auth/me",
+          "url": "http://localhost:3000/v1/auth/me",
+          "roles": [
+            "public"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/v1/public/config",
+          "url": "http://localhost:3000/v1/public/config",
+          "roles": [
+            "public"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/v1/public/feedback",
+          "url": "http://localhost:3000/v1/public/feedback",
+          "roles": [
+            "public"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/v1/dev/mailbox",
+          "url": "http://localhost:3000/v1/dev/mailbox",
+          "roles": [
+            "Administrator",
+            "Violation manager"
+          ]
+        }
+      ],
+      "manualChecklist": []
+    },
+    {
+      "id": "catalogue",
+      "status": "merged",
+      "testCases": "testcases/catalogue/test-cases.md",
+      "latestReport": "testresults/catalogue/frontend-test-report.md",
+      "screens": [
+        {
+          "name": "Categories",
+          "url": "http://localhost:5173/categories",
+          "roles": [
+            "Administrator"
+          ]
+        },
+        {
+          "name": "Owners",
+          "url": "http://localhost:5173/owners",
+          "roles": [
+            "Administrator"
+          ]
+        },
+        {
+          "name": "Config (Badge Name)",
+          "url": "http://localhost:5173/config",
+          "roles": [
+            "Administrator"
+          ]
+        }
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/v1/categories",
+          "url": "http://localhost:3000/v1/categories",
+          "roles": [
+            "Administrator"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/v1/categories",
+          "url": "http://localhost:3000/v1/categories",
+          "roles": [
+            "Administrator"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/v1/categories/{id}",
+          "url": "http://localhost:3000/v1/categories/{id}",
+          "roles": [
+            "Administrator"
+          ]
+        },
+        {
+          "method": "PUT",
+          "path": "/v1/categories/{id}",
+          "url": "http://localhost:3000/v1/categories/{id}",
+          "roles": [
+            "Administrator"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/v1/categories/{id}",
+          "url": "http://localhost:3000/v1/categories/{id}",
+          "roles": [
+            "Administrator"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/v1/owners",
+          "url": "http://localhost:3000/v1/owners",
+          "roles": [
+            "Administrator"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/v1/owners",
+          "url": "http://localhost:3000/v1/owners",
+          "roles": [
+            "Administrator"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/v1/owners/{id}",
+          "url": "http://localhost:3000/v1/owners/{id}",
+          "roles": [
+            "Administrator"
+          ]
+        },
+        {
+          "method": "PUT",
+          "path": "/v1/owners/{id}",
+          "url": "http://localhost:3000/v1/owners/{id}",
+          "roles": [
+            "Administrator"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/v1/owners/{id}",
+          "url": "http://localhost:3000/v1/owners/{id}",
+          "roles": [
+            "Administrator"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/v1/config",
+          "url": "http://localhost:3000/v1/config",
+          "roles": [
+            "Administrator"
+          ]
+        },
+        {
+          "method": "PUT",
+          "path": "/v1/config",
+          "url": "http://localhost:3000/v1/config",
+          "roles": [
+            "Administrator"
+          ]
+        }
+      ],
+      "manualChecklist": []
+    },
+    {
+      "id": "users",
+      "status": "merged",
+      "testCases": "testcases/users/test-cases.md",
+      "latestReport": "testresults/users/frontend-test-report.md",
+      "screens": [
+        {
+          "name": "Portal users",
+          "url": "http://localhost:5173/portal-users",
+          "roles": [
+            "Administrator"
+          ]
+        },
+        {
+          "name": "App users",
+          "url": "http://localhost:5173/app-users",
+          "roles": [
+            "Administrator"
+          ]
+        },
+        {
+          "name": "My profile / change password",
+          "url": "http://localhost:5173/profile",
+          "roles": [
+            "Administrator",
+            "Violation manager"
+          ]
+        }
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/v1/portal-users",
+          "url": "http://localhost:3000/v1/portal-users",
+          "roles": [
+            "Administrator"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/v1/portal-users",
+          "url": "http://localhost:3000/v1/portal-users",
+          "roles": [
+            "Administrator"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/v1/portal-users/{id}",
+          "url": "http://localhost:3000/v1/portal-users/{id}",
+          "roles": [
+            "Administrator"
+          ]
+        },
+        {
+          "method": "PUT",
+          "path": "/v1/portal-users/{id}",
+          "url": "http://localhost:3000/v1/portal-users/{id}",
+          "roles": [
+            "Administrator"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/v1/portal-users/{id}",
+          "url": "http://localhost:3000/v1/portal-users/{id}",
+          "roles": [
+            "Administrator"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/v1/portal-users/{id}/reset-password",
+          "url": "http://localhost:3000/v1/portal-users/{id}/reset-password",
+          "roles": [
+            "Administrator"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/v1/app-users",
+          "url": "http://localhost:3000/v1/app-users",
+          "roles": [
+            "Administrator"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/v1/app-users",
+          "url": "http://localhost:3000/v1/app-users",
+          "roles": [
+            "Administrator"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/v1/app-users/{id}",
+          "url": "http://localhost:3000/v1/app-users/{id}",
+          "roles": [
+            "Administrator"
+          ]
+        },
+        {
+          "method": "PUT",
+          "path": "/v1/app-users/{id}",
+          "url": "http://localhost:3000/v1/app-users/{id}",
+          "roles": [
+            "Administrator"
+          ]
+        },
+        {
+          "method": "DELETE",
+          "path": "/v1/app-users/{id}",
+          "url": "http://localhost:3000/v1/app-users/{id}",
+          "roles": [
+            "Administrator"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/v1/app-users/{id}/reveal-phone",
+          "url": "http://localhost:3000/v1/app-users/{id}/reveal-phone",
+          "roles": [
+            "Administrator"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/v1/profile",
+          "url": "http://localhost:3000/v1/profile",
+          "roles": [
+            "Administrator",
+            "Violation manager"
+          ]
+        },
+        {
+          "method": "PUT",
+          "path": "/v1/profile",
+          "url": "http://localhost:3000/v1/profile",
+          "roles": [
+            "Administrator",
+            "Violation manager"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/v1/profile/change-password",
+          "url": "http://localhost:3000/v1/profile/change-password",
+          "roles": [
+            "Administrator",
+            "Violation manager"
+          ]
+        }
+      ],
+      "manualChecklist": []
+    },
+    {
+      "id": "contact",
+      "status": "merged",
+      "testCases": "testcases/contact/test-cases.md",
+      "latestReport": "testresults/contact/frontend-test-report.md",
+      "screens": [
+        {
+          "name": "Manage Contact Us",
+          "url": "http://localhost:5173/contact",
+          "roles": [
+            "Administrator",
+            "Violation manager"
+          ]
+        }
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/v1/contact-messages",
+          "url": "http://localhost:3000/v1/contact-messages",
+          "roles": [
+            "Administrator",
+            "Violation manager"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/v1/contact-messages/{id}",
+          "url": "http://localhost:3000/v1/contact-messages/{id}",
+          "roles": [
+            "Administrator",
+            "Violation manager"
+          ]
+        },
+        {
+          "method": "PUT",
+          "path": "/v1/contact-messages/{id}/reply",
+          "url": "http://localhost:3000/v1/contact-messages/{id}/reply",
+          "roles": [
+            "Administrator",
+            "Violation manager"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/v1/public/contact-messages",
+          "url": "http://localhost:3000/v1/public/contact-messages",
+          "roles": [
+            "public"
+          ]
+        }
+      ],
+      "manualChecklist": []
+    },
+    {
+      "id": "violations",
+      "status": "merged",
+      "testCases": "testcases/violations/test-cases.md",
+      "latestReport": "testresults/violations/frontend-test-report.md",
+      "screens": [
+        {
+          "name": "Dashboard",
+          "url": "http://localhost:5173/dashboard",
+          "roles": [
+            "Administrator",
+            "Violation manager"
+          ]
+        },
+        {
+          "name": "User uploaded Violations",
+          "url": "http://localhost:5173/violations",
+          "roles": [
+            "Administrator",
+            "Violation manager"
+          ]
+        }
+      ],
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/v1/violations",
+          "url": "http://localhost:3000/v1/violations",
+          "roles": [
+            "Administrator",
+            "Violation manager"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/v1/violations/{id}",
+          "url": "http://localhost:3000/v1/violations/{id}",
+          "roles": [
+            "Administrator",
+            "Violation manager"
+          ]
+        },
+        {
+          "method": "PUT",
+          "path": "/v1/violations/{id}/review",
+          "url": "http://localhost:3000/v1/violations/{id}/review",
+          "roles": [
+            "Administrator",
+            "Violation manager"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/v1/violations/{id}/reveal-phone",
+          "url": "http://localhost:3000/v1/violations/{id}/reveal-phone",
+          "roles": [
+            "Administrator"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/v1/dashboard",
+          "url": "http://localhost:3000/v1/dashboard",
+          "roles": [
+            "Administrator",
+            "Violation manager"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/v1/navigation/counts",
+          "url": "http://localhost:3000/v1/navigation/counts",
+          "roles": [
+            "Administrator",
+            "Violation manager"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/v1/lookups/categories",
+          "url": "http://localhost:3000/v1/lookups/categories",
+          "roles": [
+            "Administrator",
+            "Violation manager"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/v1/lookups/owners",
+          "url": "http://localhost:3000/v1/lookups/owners",
+          "roles": [
+            "Administrator",
+            "Violation manager"
+          ]
+        },
+        {
+          "method": "GET",
+          "path": "/v1/lookups/statuses",
+          "url": "http://localhost:3000/v1/lookups/statuses",
+          "roles": [
+            "Administrator",
+            "Violation manager"
+          ]
+        },
+        {
+          "method": "POST",
+          "path": "/v1/public/violations",
+          "url": "http://localhost:3000/v1/public/violations",
+          "roles": [
+            "public"
+          ]
+        }
+      ],
+      "manualChecklist": []
+    }
+  ],
+  "resultsDir": "testresults/{module}/"
+}

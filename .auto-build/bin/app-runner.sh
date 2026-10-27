@@ -3,7 +3,7 @@
 # Starts every app in .auto-build/apps.json in the background on a free port, waits for its health URL,
 # and writes .auto-build/runtime.json (ports, pids, links: localhost / lan / external / tunnel).
 set -u
-WS="$(cd "$(dirname "$0")/../.." && pwd)"
+WS="$(cd "$(dirname "$0")/../.." && { pwd -W 2>/dev/null || pwd; })"
 AB="$WS/.auto-build"; APPS="$AB/apps.json"; RT="$AB/runtime.json"
 mkdir -p "$AB/pids" "$AB/logs"
 cfg() { node -e "try{const c=require('$AB/config.json');const v=c['$1'];console.log(v===undefined?'':v)}catch{console.log('')}"; }
@@ -15,6 +15,7 @@ lan_ip() {
   ip=$(hostname -I 2>/dev/null | awk '{print $1}')
   [ -z "$ip" ] && ip=$(ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null)
   [ -z "$ip" ] && ip=$(ip route get 1.1.1.1 2>/dev/null | awk '{for(i=1;i<=NF;i++) if($i=="src") print $(i+1)}')
+  [ -z "$ip" ] && ip=$(ipconfig 2>/dev/null | grep -m1 "IPv4" | sed 's/.*: *//' | tr -d '[:space:]')
   echo "$ip"
 }
 ext_ip() { local ip; ip=$(curl -s -m 4 https://api.ipify.org 2>/dev/null); [[ "$ip" =~ ^[0-9]{1,3}(\.[0-9]{1,3}){3}$ ]] && echo "$ip" || echo ""; }
@@ -57,7 +58,7 @@ start() {
   echo "runtime → $RT"
 }
 stop() {
-  for f in "$AB"/pids/*.pid; do [ -f "$f" ] || continue; pid=$(cat "$f"); pkill -P "$pid" 2>/dev/null; kill "$pid" 2>/dev/null; rm -f "$f"; done
+  for f in "$AB"/pids/*.pid; do [ -f "$f" ] || continue; pid=$(cat "$f"); pkill -P "$pid" 2>/dev/null; kill "$pid" 2>/dev/null; taskkill //PID "$pid" //T //F >/dev/null 2>&1; rm -f "$f"; done
   echo "stopped"
 }
 status() { [ -f "$RT" ] && cat "$RT" || echo "not running"; }
