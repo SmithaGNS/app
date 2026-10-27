@@ -4,7 +4,7 @@ Updated: 2026-10-27 13:50
 
 ## Run report (2026-10-27)
 
-**Status: done.** All 5 modules x 2 sides merged into  (backend + frontend). Nothing pushed;  untouched.
+**Status: done.** All 5 modules x 2 sides merged into the dev-release branch of each repo (backend + frontend). Nothing pushed; main untouched.
 
 | Check | Result |
 | --- | --- |
