@@ -123,7 +123,7 @@ paths:
               additionalProperties: false
               required: [username, password]
               properties:
-                username: { type: string, minLength: 3, maxLength: 254, description: Account e-mail; trimmed, lower-cased, "<" ">" stripped }
+                username: { type: string, minLength: 3, maxLength: 254, description: "Account e-mail; trimmed, lower-cased, < > stripped" }
                 password: { type: string, minLength: 1, maxLength: 128, description: Not trimmed }
       responses:
         "200":
@@ -266,7 +266,7 @@ paths:
               required: [token, newPassword]
               properties:
                 token: { type: string, minLength: 20, maxLength: 200 }
-                newPassword: { type: string, minLength: 12, maxLength: 128, description: Must contain upper-case, lower-case, a digit and a symbol }
+                newPassword: { type: string, minLength: 12, maxLength: 128, description: "Must contain upper-case, lower-case, a digit and a symbol" }
       responses:
         "200":
           description: Password reset
@@ -438,3 +438,122 @@ paths:
                                 createdAt: { type: string, format: date-time }
         "400": { $ref: "#/components/responses/ValidationError" }
         "404": { description: Disabled }
+
+  # ---- contact module (SCR-13) ----
+  /v1/contact-messages:
+    get:
+      operationId: contactMessagesList
+      tags: [contact]
+      summary: Citizen Contact Us messages, newest first, server paging and search (SCR-13)
+      security: [{ bearerAuth: [] }]
+      x-roles: [Administrator, ViolationManager]
+      x-permission: contact:read
+      parameters:
+        - { name: page, in: query, schema: { type: integer, minimum: 1, maximum: 100000, default: 1 } }
+        - { name: pageSize, in: query, schema: { type: integer, enum: [10, 25, 50], default: 10 } }
+        - { name: search, in: query, description: "Case-insensitive; matches name, email, message, response", schema: { type: string, maxLength: 100 } }
+      responses:
+        "200":
+          description: One page. items is empty when nothing matches.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - properties:
+                      data:
+                        type: object
+                        required: [items, meta]
+                        properties:
+                          items:
+                            type: array
+                            items:
+                              type: object
+                              required: [id, name, email, message, createdAt, response, repliedAt, repliedBy]
+                              properties:
+                                id: { type: string, format: uuid }
+                                name: { type: string }
+                                email: { type: string }
+                                message: { type: string }
+                                createdAt: { type: string, format: date-time }
+                                response: { type: [string, "null"] }
+                                repliedAt: { type: [string, "null"], format: date-time }
+                                repliedBy:
+                                  oneOf:
+                                    - { type: "null" }
+                                    - { type: object, properties: { id: { type: string, format: uuid }, name: { type: string } } }
+                          meta:
+                            type: object
+                            required: [page, pageSize, total, totalPages]
+                            properties:
+                              page: { type: integer }
+                              pageSize: { type: integer }
+                              total: { type: integer }
+                              totalPages: { type: integer }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /v1/contact-messages/{id}:
+    get:
+      operationId: contactMessagesGet
+      tags: [contact]
+      summary: One message (fills the reply modal)
+      security: [{ bearerAuth: [] }]
+      x-roles: [Administrator, ViolationManager]
+      x-permission: contact:read
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200": { description: "Same item shape as the list (data = item)" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { description: Unknown, deleted or malformed id (message "Message not found.") }
+  /v1/contact-messages/{id}/reply:
+    put:
+      operationId: contactMessagesReply
+      tags: [contact]
+      summary: Store or replace the single reply (replier and server time recorded; nothing is sent to the citizen)
+      security: [{ bearerAuth: [] }]
+      x-roles: [Administrator, ViolationManager]
+      x-permission: contact:reply
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [response]
+              properties:
+                response: { type: string, minLength: 1, maxLength: 1000, description: "Trimmed; < and > stripped; empty after cleaning gives 'Response is required.'" }
+      responses:
+        "200": { description: 'Updated item (data = item); message "Reply sent to {name}."' }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { description: Unknown, deleted or malformed id }
+  /v1/public/contact-messages:
+    post:
+      operationId: contactMessagesIntake
+      tags: [contact]
+      summary: Citizen app intake stub. Rate limited to 10 per 15 min per IP.
+      security: []
+      x-roles: [public]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [name, email, message]
+              properties:
+                name: { type: string, minLength: 2, maxLength: 100 }
+                email: { type: string, minLength: 5, maxLength: 254, pattern: "^\\S+@\\S+\\.\\S+$" }
+                message: { type: string, minLength: 10, maxLength: 1000 }
+      responses:
+        "201": { description: "Stored (data = { id })" }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
