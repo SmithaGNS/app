@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "allow": [
+      "Read", "Edit", "Write", "Glob", "Grep",
+      "Bash(npm:*)", "Bash(npx:*)", "Bash(node:*)", "Bash(pnpm:*)", "Bash(yarn:*)",
+      "Bash(composer:*)", "Bash(php artisan:*)",
+      "Bash(git status:*)", "Bash(git diff:*)", "Bash(git log:*)", "Bash(git show:*)",
+      "Bash(git add:*)", "Bash(git commit:*)", "Bash(git checkout:*)", "Bash(git switch:*)",
+      "Bash(git branch:*)", "Bash(git merge:*)", "Bash(git rebase:*)", "Bash(git stash:*)",
+      "Bash(git init:*)", "Bash(git remote:*)", "Bash(git fetch:*)", "Bash(git pull:*)", "Bash(git clone:*)",
+      "Bash(git push origin dev-release:*)", "Bash(git push -u origin dev-release:*)",
+      "Bash(psql:*)", "Bash(createdb:*)", "Bash(pg_isready:*)",
+      "Bash(docker compose:*)", "Bash(docker ps:*)",
+      "Bash(curl:*)", "Bash(ls:*)", "Bash(cat:*)", "Bash(find:*)", "Bash(grep:*)", "Bash(mkdir:*)",
+      "Bash(cp:*)", "Bash(mv:*)", "Bash(sha256sum:*)", "Bash(shasum:*)", "Bash(date:*)",
+      "Bash(markitdown:*)", "Bash(pandoc:*)", "Bash(openssl rand:*)",
+      "Bash(./.auto-build/bin/*)", "Bash(../.auto-build/bin/*)", "Bash(bash .auto-build/bin/*)"
+    ],
+    "deny": [
+      "Bash(git push origin main:*)", "Bash(git push origin master:*)", "Bash(git push --force:*)",
+      "Bash(git push -f:*)", "Bash(rm -rf /:*)", "Bash(sudo:*)", "Read(./.env.production)"
+    ]
+  }
+}

@@ -1,0 +1,13 @@
+# setup-project workspace
+.env
+.env.*
+!.env.example
+node_modules/
+.auto-build/runtime.json
+.auto-build/pids/
+.auto-build/logs/
+open-questions.pending.csv
+
+# separate repos
+/backend/
+/frontend/

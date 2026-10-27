@@ -1,0 +1,12 @@
+{
+  "name": "drivesafe — autonomous build sandbox",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:20",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "forwardPorts": [3333, 5173, 5432],
+  "postCreateCommand": "npm install -g @anthropic-ai/claude-code && npx -y playwright install --with-deps chromium && (pip install markitdown 2>/dev/null || true)",
+  "remoteEnv": { "AUTO_BUILD_SANDBOX": "1" },
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}"
+}

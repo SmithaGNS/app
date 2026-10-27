@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Thin wrapper so agents can call: <ws>/.auto-build/bin/oq-add.sh --module … --type … --text …
+exec node "$(dirname "$0")/oq.js" add "$@"

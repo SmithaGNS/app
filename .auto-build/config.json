@@ -1,0 +1,45 @@
+{
+  "project": "drivesafe",
+  "layout": "two-projects",
+  "buildOrder": "all-backend-first",
+  "repos": [
+    {
+      "name": "backend",
+      "dir": "backend",
+      "side": "backend",
+      "framework": "NestJS",
+      "architect": "node-architect.md"
+    },
+    {
+      "name": "frontend",
+      "dir": "frontend",
+      "side": "frontend",
+      "framework": "React",
+      "architect": "react-architect.md"
+    }
+  ],
+  "devBranch": "dev-release",
+  "pushToRemote": true,
+  "testPassword": "Test@1234",
+  "testEmailDomain": "test.local",
+  "testingPlugin": "",
+  "notifyWebhook": "",
+  "tunnel": false,
+  "loopMaxRounds": 3,
+  "dbLoopMaxRounds": 3,
+  "requirementsPriority": [
+    "FRS",
+    "test cases",
+    "user stories",
+    "BRS",
+    "HTML prototype",
+    "screens",
+    "notes"
+  ],
+  "budget": {
+    "maxHours": 8,
+    "maxRunsPerModule": 3,
+    "maxCalls": 500,
+    "limitWaitSeconds": 900
+  }
+}

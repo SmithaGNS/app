@@ -1,0 +1,8 @@
+{
+  "pluginVersion": "2.0.0",
+  "files": {
+    "CLAUDE.md": {
+      "template": "workspace/workspace-CLAUDE.md"
+    }
+  }
+}

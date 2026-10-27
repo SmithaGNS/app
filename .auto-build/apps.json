@@ -1,0 +1,21 @@
+[
+  {
+    "name": "backend",
+    "dir": "backend",
+    "start": "npm run start:dev",
+    "defaultPort": 3000,
+    "portEnv": "PORT",
+    "hostEnv": "HOST",
+    "health": "/health"
+  },
+  {
+    "name": "frontend",
+    "dir": "frontend",
+    "start": "npx vite --host 0.0.0.0 --port {PORT} --strictPort",
+    "defaultPort": 5173,
+    "health": "/",
+    "env": {
+      "BACKEND_URL": "{backend.url}"
+    }
+  }
+]
