@@ -57,6 +57,14 @@
         "unit": 43,
         "e2e": 49,
         "failed": 0
+      },
+      "frontend": "merged",
+      "frontendTests": {
+        "vitest": 49,
+        "e2e": 125,
+        "failed": 0,
+        "flaky": 3,
+        "tcCovered": "144/144"
       }
     },
     "contact": {
@@ -102,5 +110,5 @@
       "at": "2026-10-27T07:25:08.119Z"
     }
   ],
-  "updatedAt": "2026-10-27T07:25:07.926Z"
+  "updatedAt": "2026-10-27T08:03:09.599Z"
 }
