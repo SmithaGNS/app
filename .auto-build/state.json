@@ -101,6 +101,12 @@
         "unit": 17,
         "e2e": 82,
         "failed": 0
+      },
+      "frontend": "merged",
+      "frontendTests": {
+        "vitest": 61,
+        "e2e": 50,
+        "failed": 0
       }
     },
     "violations": {
@@ -130,5 +136,5 @@
       "at": "2026-10-27T07:25:08.119Z"
     }
   ],
-  "updatedAt": "2026-10-27T08:03:09.599Z"
+  "updatedAt": "2026-10-27T09:21:49.893Z"
 }
