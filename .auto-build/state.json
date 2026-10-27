@@ -73,6 +73,12 @@
         "unit": 8,
         "e2e": 20,
         "failed": 0
+      },
+      "frontend": "merged",
+      "frontendTests": {
+        "vitest": 13,
+        "e2e": 24,
+        "failed": 0
       }
     },
     "catalogue": {
