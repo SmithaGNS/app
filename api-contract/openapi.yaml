@@ -39,7 +39,7 @@ components:
               properties:
                 code:
                   type: string
-                  enum: [invalid_credentials, login_locked, otp_incorrect, otp_expired, otp_attempts_exceeded, otp_resend_wait, rate_limited, session_expired, unauthenticated, forbidden, reset_token_invalid, category_name_taken, category_protected, category_in_use, owner_name_taken, owner_in_use]
+                  enum: [invalid_credentials, login_locked, otp_incorrect, otp_expired, otp_attempts_exceeded, otp_resend_wait, rate_limited, session_expired, unauthenticated, forbidden, reset_token_invalid, password_change_required, cannot_delete_self, last_administrator, email_missing, not_found, change_password_locked, category_name_taken, category_protected, category_in_use, owner_name_taken, owner_in_use]
             - type: object
               properties:
                 validation: { type: array, items: { type: string } }
@@ -147,9 +147,6 @@ components:
         pageSize: { type: integer }
         total: { type: integer }
         totalPages: { type: integer }
-  parameters:
-    CataloguePage: { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
-    CataloguePageSize: { name: pageSize, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 10 } }
     # ---- users module (SCR-20/21/22) -------------------------------------------------------------
     PageMeta:
       type: object
@@ -253,6 +250,9 @@ components:
         currentPassword: { type: string, minLength: 1, maxLength: 128 }
         newPassword: { type: string, minLength: 12, maxLength: 128, description: Shared password policy; must differ from the current one }
         confirmPassword: { type: string, description: Must equal newPassword }
+  parameters:
+    CataloguePage: { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+    CataloguePageSize: { name: pageSize, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 10 } }
   responses:
     Conflict:
       description: "Duplicate e-mail/phone (400-style `errors.fields.{field}[]`) or a business rule (`errors.code`: cannot_delete_self | last_administrator | email_missing)"

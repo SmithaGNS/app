@@ -27,3 +27,19 @@ New (Administrator only, Bearer):
 - New `errors.code` values: `category_name_taken`, `category_protected`, `category_in_use`, `owner_name_taken`, `owner_in_use` (all HTTP 409; `message` is user-presentable).
 
 Frontend notes: success/toast text is returned in `message`; PUT replaces (omit `ownerId` or send `null` for "No owner"); the category "Other" cannot be deleted or renamed; deleting an owner that categories use is refused with 409 (reassign first).
+
+## 2026-10-27 - users module - SCR-20 portal users, SCR-21 app users, SCR-22 profile
+
+Additive (no breaking change). New operations (all `Bearer`):
+
+- `GET|POST /v1/portal-users`, `GET|PUT|DELETE /v1/portal-users/{id}`, `POST /v1/portal-users/{id}/reset-password` (Administrator)
+- `GET|POST /v1/app-users`, `GET|PUT|DELETE /v1/app-users/{id}`, `POST /v1/app-users/{id}/reveal-phone` (Administrator; reveal is audited)
+- `GET|PUT /v1/profile`, `POST /v1/profile/change-password` (any signed-in role)
+
+Frontend notes:
+- Lists return `data: { items, meta: { total, perPage, currentPage, lastPage } }`; query `page`, `perPage` (10/25/50/100, default 10) and `search` (max 100). Search is server-side (app users: also on the unmasked phone). (Catalogue lists use `page`/`pageSize`/`totalPages` - the two modules differ; see open-questions.)
+- Phone = digits (7-15) in `phone` + optional `phoneCountryCode` (digits, a leading `+` is accepted); use `phoneDisplay` for "+1 876 ..." text. App-user lists only carry `phoneMasked`; call `reveal-phone` for the number (the Edit dialog may omit `phone` to keep it).
+- Duplicate e-mail/phone: HTTP 409 with `errors.fields.email|phone`. Business rules: 409 with `errors.code` = `cannot_delete_self` | `last_administrator` | `email_missing`. Change-password failures are 400 with `errors.fields.currentPassword|newPassword|confirmPassword`; repeated wrong current passwords give 429 `change_password_locked`.
+- New error code `password_change_required` (403): a user created/reset by an administrator (`mustChangePassword: true`, also returned by sign-in) can only call `/v1/profile`, `/v1/profile/change-password`, `/v1/auth/me` and `/v1/auth/logout` until the password is changed; the UI must route them to Change password.
+- `PortalUser.email` can be `null` for migrated legacy rows (such a user cannot sign in); the admin edit form must require an e-mail.
+- No CSV/Excel/Print endpoints exist (out of scope).

@@ -74,6 +74,14 @@
         "e2e": 49,
         "failed": 0
       }
+    },
+    "users": {
+      "backend": "merged",
+      "backendTests": {
+        "unit": 17,
+        "e2e": 82,
+        "failed": 0
+      }
     }
   },
   "run": {
